@@ -20,10 +20,10 @@ DEBUG = config('DEBUG', default='False').lower() == 'true'
 
 ALLOWED_HOSTS = [
     host.strip()
-    for host in config(
-        'ALLOWED_HOSTS',
-        default='127.0.0.1,localhost'
-    ).split(',')
+    for host in config('ALLOWED_HOSTS', default='127.0.0.1,localhost')
+    .replace(" ", "")
+    .split(",")
+    if host.strip()
 ]
 
 # ============================================================
