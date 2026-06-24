@@ -13,26 +13,35 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ============================================================
 # 🔐 SECURITY
 # ============================================================
+
 SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = config('DEBUG', default='False').lower() == 'true'
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in config(
+        'ALLOWED_HOSTS',
+        default='127.0.0.1,localhost'
+    ).split(',')
+]
 
 # ============================================================
-# 🛡️ CSRF TRUSTED ORIGINS (Auto Dynamic)
+# 🛡️ CSRF TRUSTED ORIGINS
 # ============================================================
+
 CSRF_TRUSTED_ORIGINS = []
 
 if not DEBUG:
     for host in ALLOWED_HOSTS:
+        host = host.strip()
         if host not in ["localhost", "127.0.0.1"]:
             CSRF_TRUSTED_ORIGINS.append(f"https://{host}")
-            CSRF_TRUSTED_ORIGINS.append(f"http://{host}")  # ✅ HTTP যোগ করা হয়েছে (ডেভেলপমেন্টের জন্য)
 
 # ============================================================
 # 📦 APPS
 # ============================================================
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -59,9 +68,10 @@ INSTALLED_APPS = [
 # ============================================================
 # 🔧 MIDDLEWARE
 # ============================================================
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ Static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -74,14 +84,16 @@ MIDDLEWARE = [
 ]
 
 # ============================================================
-# 🌐 URL
+# 🌐 ROOT URL
 # ============================================================
+
 ROOT_URLCONF = 'flipkart.urls'
 WSGI_APPLICATION = 'flipkart.wsgi.application'
 
 # ============================================================
 # 📁 TEMPLATES
 # ============================================================
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -100,17 +112,17 @@ TEMPLATES = [
 ]
 
 # ============================================================
-# 🗄️ DATABASE (SECURE)
+# 🗄️ DATABASE
 # ============================================================
+
 DATABASES = {
     'default': dj_database_url.parse(
         config('DATABASE_URL'),
         conn_max_age=600,
-        ssl_require=not DEBUG  # ✅ Production-এ SSL চালু
+        ssl_require=not DEBUG
     )
 }
 
-# ✅ Connection Pooling (Production)
 if not DEBUG:
     DATABASES['default']['CONN_MAX_AGE'] = 600
     DATABASES['default']['OPTIONS'] = {
@@ -118,8 +130,9 @@ if not DEBUG:
     }
 
 # ============================================================
-# 🔑 PASSWORD VALIDATION
+# 🔑 AUTH VALIDATION
 # ============================================================
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -130,6 +143,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # ============================================================
 # 🌍 INTERNATIONALIZATION
 # ============================================================
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Dhaka'
 USE_I18N = True
@@ -138,6 +152,7 @@ USE_TZ = True
 # ============================================================
 # 📁 STATIC / MEDIA
 # ============================================================
+
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
@@ -152,6 +167,7 @@ if not DEBUG:
 # ============================================================
 # 📧 EMAIL
 # ============================================================
+
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:
@@ -165,6 +181,7 @@ else:
 # ============================================================
 # 🛒 BASIC SETTINGS
 # ============================================================
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'home:home'
@@ -172,8 +189,9 @@ LOGOUT_REDIRECT_URL = 'home:home'
 CART_SESSION_ID = 'cart'
 
 # ============================================================
-# ⚡ CACHE (PRODUCTION SAFE)
+# ⚡ CACHE
 # ============================================================
+
 if DEBUG:
     CACHES = {
         'default': {
@@ -182,55 +200,52 @@ if DEBUG:
         }
     }
 else:
-    # ✅ Redis (Best for Production)
-    try:
-        CACHES = {
-            'default': {
-                'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-                'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
-            }
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': config(
+                'REDIS_URL',
+                default='redis://127.0.0.1:6379/1'
+            ),
         }
-    except Exception:
-        # ✅ Fallback to Database Cache (যদি Redis না থাকে)
-        CACHES = {
-            'default': {
-                'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-                'LOCATION': 'django_cache_table',
-            }
-        }
+    }
 
 # ============================================================
 # 🔒 SECURITY (PRODUCTION ONLY)
 # ============================================================
+
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
+
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = True
+
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = False  # ✅ First deploy এ False রাখুন
+    SECURE_HSTS_PRELOAD = False
 
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
     X_FRAME_OPTIONS = 'DENY'
     SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
-    SESSION_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_HTTPONLY = True
-
-    SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
 
 # ============================================================
-# ⚡ LOGGING (Production Ready)
+# ⚡ LOGGING
 # ============================================================
+
 LOGS_DIR = BASE_DIR / 'logs'
 LOGS_DIR.mkdir(exist_ok=True)
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+
     'formatters': {
         'verbose': {
             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
@@ -241,6 +256,7 @@ LOGGING = {
             'style': '{',
         },
     },
+
     'handlers': {
         'file': {
             'level': 'ERROR',
@@ -254,6 +270,7 @@ LOGGING = {
             'formatter': 'simple',
         },
     },
+
     'loggers': {
         'django': {
             'handlers': ['file', 'console'],
@@ -269,8 +286,9 @@ LOGGING = {
 }
 
 # ============================================================
-# 🚀 ENV CHECK
+# 🚀 FINAL STATUS PRINT
 # ============================================================
+
 print("=" * 50)
 print("🚀 Django Running:", "PRODUCTION" if not DEBUG else "DEVELOPMENT")
 print("🗄️ Database: PostgreSQL")
