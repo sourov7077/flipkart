@@ -1,0 +1,355 @@
+<!-- ============================================================
+   উইশলিস্ট বাটন (রিইউজেবল কম্পোনেন্ট)
+   ============================================================ -->
+{% load static %}
+
+<style>
+    /* ============================================================
+       উইশলিস্ট বাটন স্টাইল
+       ============================================================ */
+    .fk-wishlist-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border: 1px solid var(--border-gray);
+        background: var(--white);
+        color: var(--text-dark);
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: 0 !important;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        min-width: 100px;
+        text-decoration: none;
+        user-select: none;
+    }
+    
+    .fk-wishlist-btn:hover {
+        border-color: var(--primary-blue);
+        background: #f0f7ff;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .fk-wishlist-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .fk-wishlist-btn .wishlist-icon {
+        font-size: 18px;
+        transition: all 0.3s ease;
+    }
+    
+    .fk-wishlist-btn .wishlist-text {
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    /* অ্যাক্টিভ স্টেট (উইশলিস্টে আছে) */
+    .fk-wishlist-btn.active {
+        background: #dc3545;
+        border-color: #dc3545;
+        color: white;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+    }
+    
+    .fk-wishlist-btn.active:hover {
+        background: #c82333;
+        border-color: #c82333;
+        box-shadow: 0 4px 16px rgba(220, 53, 69, 0.4);
+        transform: translateY(-2px);
+    }
+    
+    .fk-wishlist-btn.active .wishlist-text {
+        color: white;
+    }
+    
+    /* অ্যানিমেশন */
+    .fk-wishlist-btn .wishlist-icon {
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    
+    .fk-wishlist-btn.loading {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+    
+    .fk-wishlist-btn.loading .wishlist-icon {
+        animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* হৃদয় পপ অ্যানিমেশন */
+    .fk-wishlist-btn .wishlist-icon.pop {
+        animation: heartPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    
+    @keyframes heartPop {
+        0% { transform: scale(1); }
+        30% { transform: scale(1.4); }
+        60% { transform: scale(0.9); }
+        100% { transform: scale(1); }
+    }
+    
+    /* সাইজ ভেরিয়েন্ট */
+    .fk-wishlist-btn.sm {
+        padding: 4px 10px;
+        font-size: 12px;
+        min-width: 60px;
+    }
+    
+    .fk-wishlist-btn.sm .wishlist-icon {
+        font-size: 14px;
+    }
+    
+    .fk-wishlist-btn.sm .wishlist-text {
+        font-size: 11px;
+    }
+    
+    .fk-wishlist-btn.lg {
+        padding: 12px 24px;
+        font-size: 16px;
+        min-width: 140px;
+    }
+    
+    .fk-wishlist-btn.lg .wishlist-icon {
+        font-size: 22px;
+    }
+    
+    .fk-wishlist-btn.lg .wishlist-text {
+        font-size: 15px;
+    }
+    
+    /* ফুল-উইথ ভেরিয়েন্ট */
+    .fk-wishlist-btn.full-width {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* টুলটিপ */
+    .fk-wishlist-btn .tooltip-text {
+        position: absolute;
+        bottom: 110%;
+        left: 50%;
+        transform: translateX(-50%) scale(0.8);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s ease;
+    }
+    
+    .fk-wishlist-btn:hover .tooltip-text {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+    }
+    
+    /* মোবাইল রেসপন্সিভ */
+    @media (max-width: 575.98px) {
+        .fk-wishlist-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            min-width: 60px;
+        }
+        
+        .fk-wishlist-btn .wishlist-icon {
+            font-size: 15px;
+        }
+        
+        .fk-wishlist-btn .wishlist-text {
+            font-size: 11px;
+        }
+        
+        .fk-wishlist-btn.lg {
+            padding: 10px 16px;
+            font-size: 14px;
+            min-width: 100px;
+        }
+        
+        .fk-wishlist-btn.lg .wishlist-icon {
+            font-size: 18px;
+        }
+        
+        .fk-wishlist-btn.lg .wishlist-text {
+            font-size: 13px;
+        }
+    }
+</style>
+
+<!-- ============================================================
+   উইশলিস্ট বাটন এইচটিএমএল
+   ============================================================ -->
+{% if product %}
+<button class="fk-wishlist-btn {% if in_wishlist %}active{% endif %} {% if size %}{{ size }}{% endif %} {% if full_width %}full-width{% endif %}"
+        data-product-id="{{ product.id }}"
+        data-in-wishlist="{% if in_wishlist %}true{% else %}false{% endif %}"
+        id="wishlist-btn-{{ product.id }}"
+        title="{% if in_wishlist %}Remove from wishlist{% else %}Add to wishlist{% endif %}">
+    
+    <!-- আইকন -->
+    <span class="wishlist-icon">
+        {% if in_wishlist %}
+        <i class="fas fa-heart"></i>
+        {% else %}
+        <i class="far fa-heart"></i>
+        {% endif %}
+    </span>
+    
+    <!-- টেক্সট -->
+    <span class="wishlist-text">
+        {% if in_wishlist %}
+        Saved
+        {% else %}
+        Wishlist
+        {% endif %}
+    </span>
+    
+    <!-- টুলটিপ -->
+    <span class="tooltip-text">
+        {% if in_wishlist %}
+        Remove from wishlist
+        {% else %}
+        Add to wishlist
+        {% endif %}
+    </span>
+</button>
+{% endif %}
+
+<!-- ============================================================
+   উইশলিস্ট বাটন জাভাস্ক্রিপ্ট
+   ============================================================ -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // সকল উইশলিস্ট বাটন সিলেক্ট
+        document.querySelectorAll('.fk-wishlist-btn').forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const productId = this.getAttribute('data-product-id');
+                const button = this;
+                const icon = button.querySelector('.wishlist-icon i');
+                const text = button.querySelector('.wishlist-text');
+                const tooltip = button.querySelector('.tooltip-text');
+                
+                // লোডিং স্টেট
+                button.classList.add('loading');
+                const originalHTML = button.innerHTML;
+                
+                // অ্যাক্সেস টোকেন পেতে CSRF টোকেন
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                const token = csrfToken ? csrfToken.value : '';
+                
+                // AJAX রিকোয়েস্ট
+                fetch(`/wishlist/toggle/${productId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': token,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const inWishlist = data.in_wishlist;
+                        const wishlistCount = data.wishlist_count || 0;
+                        
+                        // বাটন আপডেট
+                        if (inWishlist) {
+                            // অ্যাক্টিভ স্টেট
+                            button.classList.add('active');
+                            icon.className = 'fas fa-heart';
+                            text.textContent = 'Saved';
+                            if (tooltip) tooltip.textContent = 'Remove from wishlist';
+                            button.title = 'Remove from wishlist';
+                            button.setAttribute('data-in-wishlist', 'true');
+                            
+                            // অ্যানিমেশন
+                            icon.classList.add('pop');
+                            setTimeout(() => icon.classList.remove('pop'), 500);
+                            
+                            showToast('❤️ Added to wishlist!', 'success');
+                        } else {
+                            // ইনঅ্যাক্টিভ স্টেট
+                            button.classList.remove('active');
+                            icon.className = 'far fa-heart';
+                            text.textContent = 'Wishlist';
+                            if (tooltip) tooltip.textContent = 'Add to wishlist';
+                            button.title = 'Add to wishlist';
+                            button.setAttribute('data-in-wishlist', 'false');
+                            
+                            showToast('💔 Removed from wishlist', 'info');
+                        }
+                        
+                        // উইশলিস্ট কাউন্ট আপডেট
+                        updateWishlistCount(wishlistCount);
+                        
+                        // কার্ডে উইশলিস্ট স্ট্যাটাস আপডেট (যদি থাকে)
+                        const card = button.closest('.fk-product-card');
+                        if (card) {
+                            const cardBtn = card.querySelector('.fk-wishlist-btn');
+                            if (cardBtn) {
+                                cardBtn.classList.toggle('active', inWishlist);
+                            }
+                        }
+                    } else {
+                        showToast(data.message || '❌ Something went wrong', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('❌ Failed to update wishlist', 'error');
+                })
+                .finally(() => {
+                    // লোডিং স্টেট রিমুভ
+                    button.classList.remove('loading');
+                    
+                    // বাটন এনাবেল
+                    button.disabled = false;
+                });
+            });
+        });
+    });
+    
+    // ============================================================
+    // উইশলিস্ট কাউন্ট আপডেট ফাংশন
+    // ============================================================
+    function updateWishlistCount(count) {
+        // নেভবারের উইশলিস্ট ব্যাজ
+        document.querySelectorAll('.wishlist-count, .badge-icon, .nav-badge').forEach(el => {
+            if (el.closest('a[href*="wishlist"]') || el.classList.contains('wishlist-count')) {
+                if (count > 0) {
+                    el.textContent = count;
+                    el.style.display = 'inline-flex';
+                    el.style.display = 'inline-block';
+                } else {
+                    el.style.display = 'none';
+                }
+            }
+        });
+        
+        // মোবাইল নেভবারের ব্যাজ
+        document.querySelectorAll('.fk-mobile-nav .nav-badge').forEach(el => {
+            if (el.closest('a[href*="wishlist"]')) {
+                if (count > 0) {
+                    el.textContent = count;
+                    el.style.display = 'inline-flex';
+                } else {
+                    el.style.display = 'none';
+                }
+            }
+        });
+    }
+</script>

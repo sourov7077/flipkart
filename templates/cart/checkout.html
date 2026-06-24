@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout - Flipkart{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- ============================================================
+    চেকআউট ফর্ম
+    ============================================================ -->
+    <div class="col-lg-8">
+        <div class="fk-card">
+            <div class="fk-card-header">
+                <i class="fas fa-map-marker-alt text-blue me-2"></i>
+                Delivery Address
+            </div>
+            
+            <form method="POST" action="{% url 'orders:order_create' %}">
+                {% csrf_token %}
+                
+                <!-- শিপিং ঠিকানা -->
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-600" style="font-size: 13px;">Full Name</label>
+                        <input type="text" name="shipping_address" class="form-control form-control-sm rounded-0" 
+                               placeholder="Enter full name" required style="font-size: 14px; border-radius: 0 !important;">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-600" style="font-size: 13px;">Phone Number</label>
+                        <input type="tel" name="shipping_phone" class="form-control form-control-sm rounded-0" 
+                               placeholder="Enter phone number" required style="font-size: 14px; border-radius: 0 !important;">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-600" style="font-size: 13px;">Address</label>
+                        <textarea name="shipping_address" class="form-control form-control-sm rounded-0" 
+                                  rows="3" placeholder="Enter your full address" required style="font-size: 14px; border-radius: 0 !important;"></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-600" style="font-size: 13px;">City</label>
+                        <input type="text" name="shipping_city" class="form-control form-control-sm rounded-0" 
+                               placeholder="City" required style="font-size: 14px; border-radius: 0 !important;">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-600" style="font-size: 13px;">Postal Code</label>
+                        <input type="text" name="shipping_postal_code" class="form-control form-control-sm rounded-0" 
+                               placeholder="Postal code" required style="font-size: 14px; border-radius: 0 !important;">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-600" style="font-size: 13px;">Country</label>
+                        <select name="shipping_country" class="form-select form-select-sm rounded-0" required style="font-size: 14px; border-radius: 0 !important;">
+                            <option value="India">India</option>
+                            <option value="Bangladesh">Bangladesh</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <!-- পেমেন্ট মেথড - ✅ PhonePe, Google Pay, Paytm -->
+                <div class="fk-card-header">
+                    <i class="fas fa-credit-card text-blue me-2"></i>
+                    Payment Method
+                </div>
+                
+                <div class="payment-methods-grid">
+                    <div class="payment-option" onclick="selectPayment(this, 'phonepe')">
+                        <input type="radio" name="payment_method" value="phonepe" id="phonepe" checked hidden>
+                        <label for="phonepe">
+                            <div class="payment-icon" style="color: #5f259f;">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <span class="payment-name">PhonePe</span>
+                            <span class="payment-badge">Secure</span>
+                        </label>
+                    </div>
+                    
+                    <div class="payment-option" onclick="selectPayment(this, 'googlepay')">
+                        <input type="radio" name="payment_method" value="googlepay" id="googlepay" hidden>
+                        <label for="googlepay">
+                            <div class="payment-icon" style="color: #4285f4;">
+                                <i class="fab fa-google-pay"></i>
+                            </div>
+                            <span class="payment-name">Google Pay</span>
+                            <span class="payment-badge">Secure</span>
+                        </label>
+                    </div>
+                    
+                    <div class="payment-option" onclick="selectPayment(this, 'paytm')">
+                        <input type="radio" name="payment_method" value="paytm" id="paytm" hidden>
+                        <label for="paytm">
+                            <div class="payment-icon" style="color: #00baf2;">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <span class="payment-name">Paytm</span>
+                            <span class="payment-badge">Secure</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Trust Badge -->
+                <div class="trust-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Your payment is 100% secure and encrypted</span>
+                </div>
+                
+                <hr class="my-4">
+                
+                <!-- অর্ডার নোট -->
+                <div class="mb-3">
+                    <label class="form-label fw-600" style="font-size: 13px;">Order Notes (Optional)</label>
+                    <textarea name="notes" class="form-control form-control-sm rounded-0" 
+                              rows="2" placeholder="Any special instructions for delivery" style="font-size: 14px; border-radius: 0 !important;"></textarea>
+                </div>
+                
+                <!-- প্লেস অর্ডার বাটন -->
+                <div class="d-grid">
+                    <button type="submit" class="btn fk-btn-orange py-3 rounded-0" style="font-size: 16px; font-weight: 600; border-radius: 0 !important;">
+                        <i class="fas fa-check-circle me-2"></i> Place Order
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- ============================================================
+    অর্ডার সামারি
+    ============================================================ -->
+    <div class="col-lg-4">
+        <div class="fk-card sticky-top" style="top: 100px;">
+            <div class="fk-card-header" style="font-size: 15px;">
+                <i class="fas fa-receipt me-2 text-blue"></i> Order Summary
+            </div>
+            
+            <!-- কার্ট আইটেম সামারি -->
+            <div class="mb-3" style="max-height: 300px; overflow-y: auto;">
+                {% for item in cart %}
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom" style="font-size: 13px;">
+                    <div>
+                        <span class="fw-500">{{ item.product.name|truncatechars:20 }}</span>
+                        <span class="text-muted" style="font-size: 12px;"> × {{ item.quantity }}</span>
+                    </div>
+                    <span class="fw-600">₹{{ item.total_price }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <hr>
+            
+            <!-- প্রাইস ব্রেকডাউন -->
+            <div class="price-details">
+                <div class="d-flex justify-content-between py-2" style="font-size: 14px;">
+                    <span class="text-muted">Subtotal</span>
+                    <span class="fw-600">₹{{ cart.get_total_price }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom" style="font-size: 14px;">
+                    <span class="text-muted">Shipping</span>
+                    <span>
+                        {% if cart.get_total_price >= 1000 %}
+                        <span class="text-success fw-600">Free</span>
+                        {% else %}
+                        ₹60.00
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <!-- কুপন ডিসকাউন্ট -->
+                {% if request.session.applied_coupon %}
+                <div class="d-flex justify-content-between py-2 border-bottom" style="font-size: 14px;">
+                    <span class="text-muted">Coupon Discount</span>
+                    <span class="text-success fw-600">- ₹{{ request.session.applied_coupon.discount }}</span>
+                </div>
+                {% endif %}
+                
+                <!-- টোটাল -->
+                <div class="d-flex justify-content-between py-3" style="font-size: 18px; border-top: 2px solid var(--border-gray);">
+                    <strong class="fw-700">Total</strong>
+                    <strong class="fw-700 text-blue">
+                        ₹{% if cart.get_total_price >= 1000 %}{{ cart.get_total_price }}{% else %}{{ cart.get_total_price|add:60 }}{% endif %}
+                    </strong>
+                </div>
+            </div>
+            
+            <!-- সেভিংস -->
+            <div class="text-success fw-600 mb-2" style="font-size: 13px;">
+                <i class="fas fa-check-circle me-1"></i>
+                You will save ₹{{ cart.get_total_price|add:"-1"|add:0 }} on this order
+            </div>
+            
+            <!-- ডেলিভারি ইনফো -->
+            <div class="bg-light p-3 mt-2" style="border-left: 3px solid var(--primary-blue);">
+                <p class="mb-1" style="font-size: 13px;">
+                    <i class="fas fa-truck text-blue me-2"></i>
+                    <span class="fw-600">Delivery:</span>
+                    <span class="text-muted">Expected by <span class="fw-600 text-dark">Tomorrow</span></span>
+                </p>
+                <p class="mb-0" style="font-size: 13px;">
+                    <i class="fas fa-undo text-blue me-2"></i>
+                    <span class="fw-600">Returns:</span>
+                    <span class="text-muted">30 days easy return</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+   স্টাইল ওভাররাইড
+   ============================================================ -->
+<style>
+    .payment-methods-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+    .payment-option {
+        border: 2px solid #e8e8e8;
+        border-radius: 12px;
+        padding: 20px 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #fff;
+    }
+    .payment-option:hover {
+        border-color: #2874f0;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+    .payment-option.selected {
+        border-color: #2874f0;
+        background: #f0f7ff;
+        box-shadow: 0 0 0 4px rgba(40,116,240,0.1);
+    }
+    .payment-option input[type="radio"] { display: none; }
+    .payment-option label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        margin: 0;
+        width: 100%;
+    }
+    .payment-option .payment-icon {
+        font-size: 36px;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    .payment-option.selected .payment-icon {
+        background: #e8f0fe;
+        transform: scale(1.05);
+    }
+    .payment-option .payment-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #212121;
+    }
+    .payment-option .payment-badge {
+        font-size: 10px;
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-weight: 600;
+    }
+    .trust-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 16px;
+        font-size: 13px;
+        color: #666;
+    }
+    .trust-badge i {
+        color: #2874f0;
+        font-size: 18px;
+    }
+    
+    @media (max-width: 767.98px) {
+        .payment-methods-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .payment-option { padding: 14px 10px; }
+        .payment-option .payment-icon { font-size: 28px; width: 50px; height: 50px; }
+        .payment-option .payment-name { font-size: 12px; }
+    }
+    @media (max-width: 575.98px) {
+        .payment-methods-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .payment-option { padding: 10px 8px; }
+        .payment-option .payment-icon { font-size: 22px; width: 40px; height: 40px; }
+        .payment-option .payment-name { font-size: 10px; }
+        .payment-option .payment-badge { font-size: 8px; padding: 1px 6px; }
+    }
+</style>
+
+<!-- ============================================================
+   জাভাস্ক্রিপ্ট
+   ============================================================ -->
+{% block extra_js %}
+<script>
+    function selectPayment(element, value) {
+        document.querySelectorAll('.payment-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        element.classList.add('selected');
+        const radio = element.querySelector('input[type="radio"]');
+        if (radio) radio.checked = true;
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const defaultOption = document.querySelector('.payment-option');
+        if (defaultOption) defaultOption.classList.add('selected');
+    });
+</script>
+{% endblock %}
+{% endblock %}

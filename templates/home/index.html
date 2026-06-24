@@ -1,0 +1,1637 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Flipkart - Online Shopping{% endblock %}
+
+{% block content %}
+
+<div class="fk-home-header" style="background: linear-gradient(180deg, #90baff 0%, #d2e4ff 70%, #ffffff 100%); padding: -4px 14px 12px 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.06);">
+    <div class="container-fluid p-0">
+        
+        <div class="row g-2" style="margin-bottom: 12px;">
+            
+            <div class="col-6">
+                <a href="/" class="text-decoration-none d-flex flex-column align-items-center justify-content-center" 
+                   style="background: linear-gradient(180deg, #ffd814 0%, #f7ca00 100%); 
+                          border: 1px solid #f0c300;
+                          border-radius: 10px; 
+                          height: 52px; 
+                          width: 100%;
+                          box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <div class="d-flex align-items-center justify-content-center" style="gap: 4px;">
+                        <i class="fab fa-facebook-f" style="color: #2874f0; font-size: 15px; font-weight: bold; margin-right: 2px;"></i>
+                        <span style="font-size: 16px; font-weight: 700; color: #000000; font-style: italic; letter-spacing: -0.3px;">
+                            Flipkart
+                        </span>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-6">
+                <a href="#" class="text-decoration-none d-flex flex-column align-items-center justify-content-center" 
+                   style="background: linear-gradient(180deg, #ffffff 0%, #f7f9fa 100%); 
+                          border: 1px solid #dcdcdc;
+                          border-radius: 10px; 
+                          height: 52px; 
+                          width: 100%;
+                          box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+                    <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
+                        <i class="fas fa-paper-plane" style="color: #ff3f55; font-size: 13px; transform: rotate(-15deg);"></i>
+                        <span style="font-size: 16px; font-weight: 600; color: #212121; font-style: italic; letter-spacing: -0.3px;">
+                            Travel
+                        </span>
+                    </div>
+                </a>
+            </div>
+            
+        </div>
+        
+        <div class="row g-0" style="padding:5px">
+            <div class="col-12">
+                <div class="position-relative" style="width: 100%;">
+                    <span class="position-absolute d-flex align-items-center justify-content-center" 
+                          style="left: 14px; top: 50%; transform: translateY(-50%); color: #757575; font-size: 15px; z-index: 2;">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    
+                    <input type="text" name="q" class="form-control" 
+                           id="liveSearchInput"
+                           placeholder="Search for Product" 
+                           autocomplete="off"
+                           style="padding: 10px 16px 10px 42px; 
+                                  background: #ffffff; 
+                                  border: 1px solid #c3c6d1;
+                                  font-size: 14px; 
+                                  height: 42px; 
+                                  width: 100%; 
+                                  border-radius: 8px !important;
+                                  color: #212121;
+                                  outline: none;
+                                  box-shadow: none;">
+                </div>
+                
+                <div id="liveSearchResults" class="position-absolute w-100 bg-white rounded-3 shadow-lg mt-1" 
+                     style="display: none; z-index: 1050; max-height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; left: 0; right: 0;">
+                    <div id="searchResultsList" class="p-2"></div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<style>
+    .fk-home-header {
+        position: sticky;
+        top: 0;
+        z-index: 1040;
+    }
+
+    #liveSearchInput::placeholder {
+        color: #878787;
+        font-weight: 400;
+    }
+
+    .fk-home-header a:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+</style>
+
+<div class="fk-tabs-wrapper bg-white border-bottom" 
+     style="position: sticky; 
+            top: 52px; 
+            z-index: 1035; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06); 
+            padding: 6px 0 0 0;
+            background: #fff;
+            transition: box-shadow 0.3s ease;">
+    <div class="container-fluid px-2 px-sm-3">
+        <div class="d-flex overflow-x-auto gap-3 gap-sm-4 py-1" 
+             style="scrollbar-width: none; -ms-overflow-style: none; flex-wrap: nowrap; align-items: stretch;">
+            
+            <a href="{% url 'products:product_list' %}" class="fk-tab-item d-flex flex-column align-items-center text-decoration-none text-dark flex-shrink-0 active" 
+               style="padding: 4px 2px 0 2px; transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); min-width: 60px;" 
+               data-category="for-you"
+               data-no-loader>
+                <div class="d-flex flex-column align-items-center" style="position: relative; width: 100%;">
+                    <span class="d-flex align-items-center justify-content-center tab-icon" 
+                          style="width: 52px; height: 52px; 
+                                 background: transparent; 
+                                 transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+                                 border-radius: 12px;
+                                 overflow: hidden;">
+                        {% if for_you_icon_url %}
+                            <img src="{{ for_you_icon_url }}" alt="For You" 
+                                 style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                        {% else %}
+                            <img src="https://static-assets-web.flixcart.com/apex-static/images/svgs/L1Nav/all.svg" alt="For You" 
+                                 style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                        {% endif %}
+                    </span>
+                    <span class="tab-label" style="font-size: 11px; font-weight: 500; margin-top: 2px; white-space: nowrap; color: #212121; transition: color 0.3s ease;">For You</span>
+                    <span class="tab-underline" style="position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); width: 24px; height: 3px; background: #2874f0; border-radius: 4px; transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);"></span>
+                </div>
+            </a>
+            
+            {% for category in categories %}
+            <a href="{% url 'products:product_list' %}?category={{ category.slug }}" 
+               class="fk-tab-item d-flex flex-column align-items-center text-decoration-none text-dark flex-shrink-0" 
+               style="padding: 4px 2px 0 2px; transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); min-width: 60px;" 
+               data-category="{{ category.slug }}"
+               data-no-loader>
+                <div class="d-flex flex-column align-items-center" style="position: relative; width: 100%;">
+                    <span class="d-flex align-items-center justify-content-center tab-icon" 
+                          style="width: 52px; height: 52px; 
+                                 background: transparent; 
+                                 transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+                                 border-radius: 12px;
+                                 overflow: hidden;">
+                        {% if category.image_base64 %}
+                            <img src="{{ category.get_image_url }}" alt="{{ category.name }}" 
+                                 style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                        {% else %}
+                            {% if category.name == "Fashion" %}
+                                <img src="https://static-assets-web.flixcart.com/apex-static/images/svgs/L1Nav/fashion.svg" alt="{{ category.name }}" style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                            {% elif category.name == "Mobiles" %}
+                                <img src="https://static-assets-web.flixcart.com/apex-static/images/svgs/L1Nav/mobiles.svg" alt="{{ category.name }}" style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                            {% elif category.name == "Beauty" %}
+                                <img src="https://static-assets-web.flixcart.com/apex-static/images/svgs/L1Nav/beauty.svg" alt="{{ category.name }}" style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                            {% elif category.name == "Electronics" %}
+                                <img src="https://static-assets-web.flixcart.com/apex-static/images/svgs/L1Nav/electronics.svg" alt="{{ category.name }}" style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                            {% elif category.name == "Home" %}
+                                <img src="https://static-assets-web.flixcart.com/apex-static/images/svgs/L1Nav/home-final.svg" alt="{{ category.name }}" style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                            {% elif "Applianace" in category.name or "Appliances" in category.name %}
+                                <img src="https://static-assets-web.flixcart.com/apex-static/images/svgs/L1Nav/tv.svg" alt="{{ category.name }}" style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                            {% elif "Toys" in category.name or "Baby" in category.name %}
+                                <img src="https://static-assets-web.flixcart.com/apex-static/images/svgs/L1Nav/toy.svg" alt="{{ category.name }}" style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                            {% elif "Food" in category.name or "Health" in category.name %}
+                                <img src="https://static-assets-web.flixcart.com/apex-static/images/svgs/L1Nav/food.svg" alt="{{ category.name }}" style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                            {% elif "Auto" in category.name or "Accessories" in category.name %}
+                                <img src="https://static-assets-web.flixcart.com/apex-static/images/svgs/L1Nav/auto-acc.svg" alt="{{ category.name }}" style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                            {% elif "Wheelers" in category.name or "2 wheelers" in category.name %}
+                                <img src="https://static-assets-web.flixcart.com/apex-static/images/svgs/L1Nav/auto-new.svg" alt="{{ category.name }}" style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                            {% elif "Sports" in category.name or "Fitness" in category.name %}
+                                <img src="https://static-assets-web.flixcart.com/apex-static/images/svgs/L1Nav/sport.svg" alt="{{ category.name }}" style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                            {% elif "Books" in category.name or "Media" in category.name %}
+                                <img src="https://static-assets-web.flixcart.com/apex-static/images/svgs/L1Nav/books.svg" alt="{{ category.name }}" style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                            {% elif "Furniture" in category.name %}
+                                <img src="https://static-assets-web.flixcart.com/apex-static/images/svgs/L1Nav/furniture.svg" alt="{{ category.name }}" style="width: 32px; height: 32px; object-fit: cover; transition: transform 0.3s ease;">
+                            {% else %}
+                                <i class="fas fa-{{ category.icon|default:'tag' }}" 
+                                   style="color: {{ category.icon_color|default:'#2874f0' }}; font-size: 24px; transition: transform 0.3s ease;"></i>
+                            {% endif %}
+                        {% endif %}
+                    </span>
+                    <span class="tab-label" style="font-size: 11px; font-weight: 500; margin-top: 2px; white-space: nowrap; color: #212121; transition: color 0.3s ease;">{{ category.name|truncatechars:8 }}</span>
+                    <span class="tab-underline" style="position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%) scaleX(0); width: 24px; height: 3px; background: #2874f0; border-radius: 4px; transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); opacity: 0;"></span>
+                </div>
+            </a>
+            {% endfor %}
+            
+        </div>
+    </div>
+</div>
+
+<div class="fk-slider-section mt-2 mb-3">
+    <div class="container-fluid px-2 px-sm-3">
+        
+        <div class="category-slider active-slider" data-category="for-you">
+            <div id="slider-for-you" class="carousel slide position-relative" data-bs-ride="carousel" data-bs-interval="4000">
+                <div class="carousel-inner rounded-3 overflow-hidden" style="border-radius: 12px !important; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+                    {% if for_you_sliders %}
+                        {% for slide in for_you_sliders %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %} slider-item">
+                            <img src="{{ slide.get_image_url }}" 
+                                 class="d-block w-100 slider-img" 
+                                 alt="{{ slide.title|default:'Slide' }}" 
+                                 style="height: 180px; object-fit: cover; border-radius: 12px; transition: transform 6s ease;">
+                            {% if slide.title or slide.subtitle %}
+                            <div class="carousel-caption d-none d-md-block slider-caption" 
+                                 style="background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, transparent 100%); border-radius: 8px; padding: 20px 28px; bottom: 24px; left: 24px; right: auto;">
+                                {% if slide.title %}<h5 style="color: #fff; font-weight: 700; font-size: 22px; margin: 0; text-shadow: 0 2px 8px rgba(0,0,0,0.3);">{{ slide.title }}</h5>{% endif %}
+                                {% if slide.subtitle %}<p style="color: rgba(255,255,255,0.95); margin: 6px 0 0; font-size: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ slide.subtitle }}</p>{% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="carousel-item active">
+                            <img src="https://rukminim2.flixcart.com/fk-p-flap/1600/270/image/4c5bb3beec984386.png?q=20" 
+                                 class="d-block w-100 slider-img" alt="Banner" style="height: 180px; object-fit: cover; border-radius: 12px; transition: transform 6s ease;">
+                        </div>
+                        <div class="carousel-item">
+                            <img src="https://rukminim2.flixcart.com/fk-p-flap/1600/270/image/9b5c7e5c11c312a1.jpg?q=20" 
+                                 class="d-block w-100 slider-img" alt="Banner" style="height: 180px; object-fit: cover; border-radius: 12px; transition: transform 6s ease;">
+                        </div>
+                    {% endif %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#slider-for-you" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" style="background-color: rgba(0,0,0,0.35); border-radius: 50%; padding: 12px; background-size: 35%; width: 40px; height: 40px; transition: all 0.3s ease;"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#slider-for-you" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" style="background-color: rgba(0,0,0,0.35); border-radius: 50%; padding: 12px; background-size: 35%; width: 40px; height: 40px; transition: all 0.3s ease;"></span>
+                </button>
+            </div>
+        </div>
+        
+        {% for category in categories %}
+        <div class="category-slider" data-category="{{ category.slug }}" style="display: none;">
+            <div id="slider-{{ category.slug }}" class="carousel slide position-relative" data-bs-ride="carousel" data-bs-interval="4000">
+                <div class="carousel-inner rounded-3 overflow-hidden" style="border-radius: 12px !important; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+                    {% with category_sliders|get_item:category.slug as sliders %}
+                        {% if sliders %}
+                            {% for slide in sliders %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %} slider-item">
+                                <img src="{{ slide.get_image_url }}" 
+                                     class="d-block w-100 slider-img" 
+                                     alt="{{ slide.title|default:'Slide' }}" 
+                                     style="height: 180px; object-fit: cover; border-radius: 12px; transition: transform 6s ease;">
+                                {% if slide.title or slide.subtitle %}
+                                <div class="carousel-caption d-none d-md-block slider-caption" 
+                                     style="background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, transparent 100%); border-radius: 8px; padding: 20px 28px; bottom: 24px; left: 24px; right: auto;">
+                                    {% if slide.title %}<h5 style="color: #fff; font-weight: 700; font-size: 22px; margin: 0; text-shadow: 0 2px 8px rgba(0,0,0,0.3);">{{ slide.title }}</h5>{% endif %}
+                                    {% if slide.subtitle %}<p style="color: rgba(255,255,255,0.95); margin: 6px 0 0; font-size: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ slide.subtitle }}</p>{% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="carousel-item active">
+                                <img src="https://rukminim2.flixcart.com/fk-p-flap/1600/270/image/9b5c7e5c11c312a1.jpg?q=20" 
+                                     class="d-block w-100" alt="Banner" style="height: 180px; object-fit: cover; border-radius: 12px;">
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#slider-{{ category.slug }}" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" style="background-color: rgba(0,0,0,0.35); border-radius: 50%; padding: 12px; background-size: 35%; width: 40px; height: 40px; transition: all 0.3s ease;"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#slider-{{ category.slug }}" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" style="background-color: rgba(0,0,0,0.35); border-radius: 50%; padding: 12px; background-size: 35%; width: 40px; height: 40px; transition: all 0.3s ease;"></span>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+        
+        
+<!-- লাইভ কাউন্টডাউন - শুধু টেক্সট, কোন ব্যাকগ্রাউন্ড বা কার্ড নেই -->
+
+<div style="display: flex; align-items: center; justify-content: center; padding: 10px 0; margin: 0 0 8px 0;">
+    
+    <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="background: #ff3f55; color: #ffffff; font-size: 16px; font-weight: 700; padding: 2px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px;">LIVE  </span>
+         <spa style="font-size: 16px; font-weight: bold; padding: 2px 8px;"n>Sale :</span> 
+    </div>
+    
+    <div style="display: flex; align-items: center; gap: 4px;">
+        
+        <span id="cdMinutes" style="color: #212121; font-size: 18px; font-weight: 700; min-width: 20px; text-align: center;"> 15</span>
+        <span style="color: #878787; font-size: 15px; font-weight: 400;">min</span>
+        <span id="cdSeconds" style="color: #212121; font-size: 18px; font-weight: 700; min-width: 20px; text-align: center;">00</span>
+        <span style="color: #878787; font-size: 15px; font-weight: 400;">sec</span>
+    </div>
+</div>
+        
+    </div>
+</div>
+
+<div class="fk-products-section">
+    <div class="container-fluid px-2 px-sm-3">
+        
+        <!-- ============================================ -->
+        <!-- ফর ইউ ট্যাব - গ্রিড ভিউ (উপর থেকে নিচে) -->
+        <!-- ============================================ -->
+        <div class="fk-card mb-5 category-products active-products" data-category="for-you" id="products-for-you" 
+             style="border-radius: 12px; padding: 14px 14px 8px 14px; margin-bottom: 50px; transition: all 0.3s ease;">
+            <div class="fk-card-header d-flex justify-content-between align-items-center px-3 py-3" 
+                 style="border-bottom: 1px solid #f0f0f0; margin-bottom: 12px;">
+                <h5 class="mb-0 fw-bold category-title" style="font-size: 18px; color: #212121; transition: color 0.3s ease;">
+                    <i class="fas fa-user-circle me-2" style="color: #2874f0; font-size: 22px;"></i>
+                    For You
+                </h5>
+                <a href="{% url 'products:product_list' %}" class="text-decoration-none fw-600 view-all-link" 
+                   style="font-size: 13px; color: #2874f0; transition: all 0.3s ease;">
+                    View All <i class="fas fa-chevron-right ms-1" style="font-size: 10px; transition: transform 0.3s ease;"></i>
+                </a>
+            </div>
+            
+            <!-- লোডিং স্কেলটন -->
+            <div class="loading-skeleton-container" id="loading-for-you">
+                <div class="row g-2">
+                    {% for i in "123456"|make_list %}
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="skeleton-card" style="width: 100%; background: #fff; border-radius: 12px; padding: 12px; border: 1px solid #f0f0f0;">
+                            <div class="skeleton-image" style="width: 100%; height: 160px; border-radius: 8px; background: #f0f0f0; animation: shimmer 1.8s ease-in-out infinite; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%;"></div>
+                            <div class="skeleton-title" style="width: 80%; height: 14px; margin-top: 10px; border-radius: 4px; background: #f0f0f0; animation: shimmer 1.8s ease-in-out infinite; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%;"></div>
+                            <div class="skeleton-price" style="width: 60%; height: 18px; margin-top: 8px; border-radius: 4px; background: #f0f0f0; animation: shimmer 1.8s ease-in-out infinite; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%;"></div>
+                            <div class="skeleton-button" style="width: 100%; height: 34px; margin-top: 10px; border-radius: 8px; background: #f0f0f0; animation: shimmer 1.8s ease-in-out infinite; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- ফর ইউ প্রোডাক্ট গ্রিড (উপর থেকে নিচে) -->
+            <div class="products-vertical-grid-wrapper" id="products-for-you-grid" style="display: none;">
+                <div class="row g-2">
+                    {% for product in for_you_products %}
+                    <div class="col-6 col-md-4 col-lg-3 product-slide" style="opacity: 1; transform: none; animation: fadeInUp 0.5s ease forwards;">
+                        <a href="{% url 'products:product_detail' product_id=product.id %}" class="text-decoration-none" style="display: block; height: 100%;">
+                            <div class="fk-custom-card-body" style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 0px; overflow: hidden; height: 100%; display: flex; flex-direction: column; padding: 8px 10px 12px 10px; position: relative; font-family: Roboto, Arial, sans-serif; cursor: pointer; transition: border-color 0.2s ease;">
+                                
+                                <div style="height: 160px; display: flex; align-items: center; justify-content: center; width: 100%; margin-bottom: 12px; background: #ffffff;">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                                    {% elif product.image_base64 %}
+                                        <img src="{{ product.get_image_url }}" alt="{{ product.name }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                                    {% else %}
+                    
+                      <img src="{% static 'images/favicon.ico' %}" alt="Flipkart" style="max-height: 60%; max-width: 80%; object-fit: contain; padding: 10px; opacity: 0.6;">
+            
+                                    {% endif %}
+                                </div>
+
+                                <div style="display: flex; flex-direction: column; flex-grow: 1; justify-content: flex-start;">
+                                    <div style="font-size: 14px; color: #212121; font-weight: 400; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 4px; min-height: 38px;">
+                                        {{ product.name }}
+                                    </div>
+
+                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 4px;">
+              
+        {% if product.discount_percentage > 0 %}                  <span style="font-size: 13px; font-weight: 500; color: #388e3c;">{{ product.discount_percentage }}% Off</span>
+        {% endif %}                              <span style="font-size: 12px; color: #878787; text-decoration: line-through;">₹{{ product.old_price }}</span>
+                                    </div>
+
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                        <span style="font-size: 16px; font-weight: 700; color: #212121;">₹{{ product.price }}</span>
+                                        
+                    <img src="{% static 'images/favicon.ico' %}" alt="Flipkart" style="max-height: 50%; max-width: 40%; object-fit: contain; padding: 0px; opacity: 0.6;">
+
+                                    </div>
+
+                                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                        <span style="background-color: #388e3c; color: #ffffff; font-size: 11px; font-weight: 700; padding: 1px 5px; border-radius: 3px; display: inline-flex; align-items: center; gap: 2px;">
+                                            4.4 <i class="fas fa-star" style="font-size: 9px;"></i>
+                                        </span>
+                                        <span style="font-size: 12px; color: #878787;">(2,454)</span>
+                                    </div>
+
+                                    <div style="font-size: 12px; color: #212121; font-weight: 400; margin-top: 2px;">
+                                        Free Delivery in Two Days
+                                    </div>
+                                </div>
+
+                            </div>
+                        </a>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-box-open fa-3x text-muted mb-3" style="opacity: 0.5;"></i>
+                        <p class="text-muted" style="font-size: 16px;">No products available</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- ============================================ -->
+        <!-- অন্যান্য ক্যাটাগরি - হরাইজন্টাল স্ক্রোল -->
+        <!-- ============================================ -->
+        {% for category in categories %}
+        <div class="fk-card mb-5 category-products" data-category="{{ category.slug }}" id="products-{{ category.slug }}" 
+             style="display: none; border-radius: 12px; padding: 14px 14px 8px 14px; margin-bottom: 34px; transition: all 0.3s ease;">
+            <div class="fk-card-header d-flex justify-content-between align-items-center px-3 py-3" 
+                 style="border-bottom: 1px solid #f0f0f0; margin-bottom: 12px;">
+                <h5 class="mb-0 fw-bold category-title" style="font-size: 18px; color: #212121; transition: color 0.3s ease;">
+                    {% if category.image_base64 %}
+                    <img src="{{ category.get_image_url }}" alt="{{ category.name }}" 
+                         style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; margin-right: 12px; transition: transform 0.3s ease;">
+                    {% else %}
+                    <i class="fas fa-{{ category.icon|default:'tag' }} me-2" style="color: #2874f0; font-size: 20px; transition: transform 0.3s ease;"></i>
+                    {% endif %}
+                    {{ category.name }}
+                </h5>
+                <a href="{% url 'products:category_detail' category.slug %}" class="text-decoration-none fw-600 view-all-link" 
+                   style="font-size: 13px; color: #2874f0; transition: all 0.3s ease;">
+                    View All <i class="fas fa-chevron-right ms-1" style="font-size: 10px; transition: transform 0.3s ease;"></i>
+                </a>
+            </div>
+            
+            <div class="loading-skeleton-container" id="loading-{{ category.slug }}">
+                <div class="d-flex gap-3" style="overflow-x: auto; padding: 4px 0; scrollbar-width: none;">
+                    {% for i in "123456"|make_list %}
+                    <div class="skeleton-card" style="min-width: 190px; max-width: 210px; flex: 0 0 auto; background: #fff; border-radius: 12px; padding: 12px; border: 1px solid #f0f0f0;">
+                        <div class="skeleton-image" style="width: 100%; height: 160px; border-radius: 8px; background: #f0f0f0; animation: shimmer 1.8s ease-in-out infinite; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%;"></div>
+                        <div class="skeleton-title" style="width: 80%; height: 14px; margin-top: 10px; border-radius: 4px; background: #f0f0f0; animation: shimmer 1.8s ease-in-out infinite; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%;"></div>
+                        <div class="skeleton-price" style="width: 60%; height: 18px; margin-top: 8px; border-radius: 4px; background: #f0f0f0; animation: shimmer 1.8s ease-in-out infinite; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%;"></div>
+                        <div class="skeleton-button" style="width: 100%; height: 34px; margin-top: 10px; border-radius: 8px; background: #f0f0f0; animation: shimmer 1.8s ease-in-out infinite; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%;"></div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="products-scroll-wrapper" id="products-{{ category.slug }}-grid" style="overflow-x: auto; overflow-y: hidden; padding: 4px 0; -webkit-overflow-scrolling: touch; scrollbar-width: none; display: none;">
+                <div class="d-flex gap-3" style="width: max-content; min-width: 100%;">
+                    {% with category_products|get_item:category.slug as products %}
+                        {% if products %}
+                            {% for product in products %}
+                            <div class="product-slide" style="min-width: 190px; max-width: 210px; flex: 0 0 auto; opacity: 1; animation: fadeInUp 0.5s ease forwards;">
+                                {% include 'components/product_card.html' with product=product %}
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            {% with category.product_set.all as fallback_products %}
+                                {% if fallback_products %}
+                                    {% for product in fallback_products %}
+                                    <div class="product-slide" style="min-width: 190px; max-width: 210px; flex: 0 0 auto; opacity: 1; animation: fadeInUp 0.5s ease forwards;">
+                                        {% include 'components/product_card.html' with product=product %}
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="col-12 text-center py-5" style="min-width: 100%;">
+                                        <i class="fas fa-box-open fa-3x text-muted mb-3" style="opacity: 0.5;"></i>
+                                        <p class="text-muted" style="font-size: 16px;">No products in this category</p>
+                                    </div>
+                                {% endif %}
+                            {% endwith %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+    </div>
+</div>
+
+<style>
+
+    .fk-home-header {
+      margin-top: 5px !important;
+      padding-top: -10px !important;
+    }
+
+
+
+
+
+    /* ===== Shimmer Animation ===== */
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+    
+    /* ===== Horizontal Scroll ===== */
+    .products-scroll-wrapper {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        position: relative;
+    }
+    
+    .products-scroll-wrapper::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .products-scroll-wrapper:hover {
+        scrollbar-width: thin;
+    }
+    
+    .products-scroll-wrapper:hover::-webkit-scrollbar {
+        display: block;
+        height: 4px;
+    }
+    
+    .products-scroll-wrapper:hover::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .products-scroll-wrapper:hover::-webkit-scrollbar-thumb {
+        background: #2874f0;
+        border-radius: 10px;
+    }
+    
+    /* ===== Product Slide Animation ===== */
+    .product-slide {
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+    }
+    
+    .product-slide:nth-child(1) { animation-delay: 0.04s; }
+    .product-slide:nth-child(2) { animation-delay: 0.08s; }
+    .product-slide:nth-child(3) { animation-delay: 0.12s; }
+    .product-slide:nth-child(4) { animation-delay: 0.16s; }
+    .product-slide:nth-child(5) { animation-delay: 0.20s; }
+    .product-slide:nth-child(6) { animation-delay: 0.24s; }
+    .product-slide:nth-child(7) { animation-delay: 0.28s; }
+    .product-slide:nth-child(8) { animation-delay: 0.32s; }
+    .product-slide:nth-child(9) { animation-delay: 0.36s; }
+    .product-slide:nth-child(10) { animation-delay: 0.40s; }
+    .product-slide:nth-child(11) { animation-delay: 0.44s; }
+    .product-slide:nth-child(12) { animation-delay: 0.48s; }
+    
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    /* ===== Enhanced Product Card ===== */
+    .fk-product-card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
+        height: 100%;
+        position: relative;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        will-change: transform;
+        width: 100%;
+        max-width: 210px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    
+    .fk-product-card:hover {
+        box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+        transform: translateY(-6px) scale(1.02);
+        border-color: #2874f0;
+    }
+    
+    .fk-product-card .product-image {
+        height: 170px;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .fk-product-card .product-image img {
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;
+        transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .fk-product-card:hover .product-image img {
+        transform: scale(1.08);
+    }
+    
+    .fk-product-card .product-body {
+        padding: 10px 12px 12px;
+        background: #ffffff;
+        position: relative;
+    }
+    
+    .fk-product-card .product-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #212121;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 4px;
+        line-height: 1.4;
+        transition: color 0.3s ease;
+    }
+    
+    .fk-product-card:hover .product-title {
+        color: #2874f0;
+    }
+    
+    .fk-product-card .product-price {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    
+    .fk-product-card .product-price .current {
+        font-size: 16px;
+        font-weight: 700;
+        color: #212121;
+    }
+    
+    .fk-product-card .product-price .original {
+        font-size: 12px;
+        font-weight: 400;
+        color: #878787;
+        text-decoration: line-through;
+    }
+    
+    .fk-product-card .product-price .discount {
+        font-size: 11px;
+        font-weight: 600;
+        color: #388e3c;
+        background: #e8f5e9;
+        padding: 1px 8px;
+        border-radius: 12px;
+    }
+    
+    .fk-product-card .product-footer {
+        padding: 6px 12px 12px;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        gap: 6px;
+        background: #ffffff;
+    }
+    
+    .fk-product-card .product-footer .btn {
+        flex: 1;
+        font-size: 12px;
+        padding: 6px 8px;
+        border-radius: 8px;
+        font-weight: 600;
+        min-height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    
+    .fk-product-card .product-footer .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    
+    .fk-product-card .product-footer .btn-outline-primary {
+        border-color: #2874f0;
+        color: #2874f0;
+        border-width: 1.5px;
+    }
+    
+    .fk-product-card .product-footer .btn-outline-primary:hover {
+        background: #2874f0;
+        color: #ffffff;
+    }
+    
+    .fk-product-card .product-footer .btn-primary {
+        background: #2874f0;
+        border-color: #2874f0;
+        color: #ffffff;
+    }
+    
+    .fk-product-card .product-footer .btn-primary:hover {
+        background: #1a5bc7;
+        border-color: #1a5bc7;
+    }
+    
+    /* ===== Badges ===== */
+    .fk-discount-badge {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: linear-gradient(135deg, #fb641b, #f57c00);
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 12px;
+        border-radius: 6px;
+        letter-spacing: 0.3px;
+        box-shadow: 0 2px 12px rgba(251, 100, 27, 0.35);
+        z-index: 2;
+        animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .fk-featured-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: linear-gradient(135deg, #2874f0, #1a5bc7);
+        color: #ffffff;
+        font-size: 9px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 6px;
+        letter-spacing: 0.3px;
+        box-shadow: 0 2px 12px rgba(40, 116, 240, 0.3);
+        z-index: 2;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    /* ===== আন্ডারলাইন ট্যাব অ্যাক্টিভ স্টাইল ===== */
+    .fk-tab-item.active .tab-underline {
+        opacity: 1 !important;
+        transform: translateX(-50%) scaleX(1) !important;
+    }
+    
+    .fk-tab-item.active .tab-label {
+        color: #2874f0 !important;
+        font-weight: 600 !important;
+    }
+    
+    .fk-tab-item.active .tab-icon {
+        background: transparent !important;
+    }
+    
+    .fk-tab-item:hover .tab-icon {
+        transform: scale(1.05);
+    }
+    
+    .fk-tab-item:hover .tab-label {
+        color: #2874f0;
+    }
+    
+    /* ===== For You Grid ===== */
+    .products-vertical-grid-wrapper .fk-custom-card-body:hover {
+        border-color: #2874f0 !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    
+    /* ===== Mobile ===== */
+    @media (max-width: 575.98px) {
+        .fk-product-card .product-image { height: 130px; }
+        .fk-product-card .product-title { font-size: 12px; }
+        .fk-product-card .product-price .current { font-size: 14px; }
+        .fk-product-card .product-footer .btn { 
+            font-size: 10px; 
+            padding: 4px 6px;
+            min-height: 28px;
+        }
+        .product-slide { min-width: 150px !important; max-width: 160px !important; }
+        .fk-tabs-wrapper { top: 48px !important; }
+        .fk-product-card { max-width: 160px; }
+        .fk-product-card .product-image { height: 120px; }
+        
+        .fk-tab-item .tab-icon {
+            width: 44px !important;
+            height: 44px !important;
+        }
+        .fk-tab-item .tab-icon img {
+            width: 26px !important;
+            height: 26px !important;
+        }
+        .fk-tab-item {
+            min-width: 50px !important;
+        }
+        .fk-tab-item .tab-label {
+            font-size: 10px !important;
+        }
+        .skeleton-card {
+            min-width: 150px !important;
+            max-width: 160px !important;
+        }
+        .skeleton-image {
+            height: 120px !important;
+        }
+        /* ফর ইউ গ্রিডে মোবাইলে */
+        .products-vertical-grid-wrapper .col-6 {
+            padding: 0 6px;
+        }
+        .products-vertical-grid-wrapper .fk-custom-card-body {
+            padding: 6px 8px 10px 8px !important;
+        }
+        .products-vertical-grid-wrapper div[style*="height: 160px"] {
+            height: 120px !important;
+        }
+    }
+    
+    @media (min-width: 576px) and (max-width: 991.98px) {
+        .fk-tabs-wrapper { top: 52px !important; }
+        .product-slide { min-width: 170px !important; max-width: 190px !important; }
+        .fk-product-card { max-width: 190px; }
+        .skeleton-card {
+            min-width: 170px !important;
+            max-width: 190px !important;
+        }
+    }
+    
+    @media (min-width: 992px) {
+        .fk-tabs-wrapper { top: 52px !important; }
+        .product-slide { min-width: 200px !important; max-width: 220px !important; }
+        .fk-product-card .product-image { height: 180px; }
+        .fk-product-card { max-width: 220px; }
+        .skeleton-card {
+            min-width: 200px !important;
+            max-width: 220px !important;
+        }
+        .skeleton-image {
+            height: 180px !important;
+        }
+    }
+
+    /* ============================================================
+       REQUIREMENT FIX: RESPONSIVE BOTTOM NAVIGATION CONTROLS
+       ============================================================ */
+    @media (min-width: 992px) {
+        .mobile-nav, .mobile-bottom-navbar, .bottom-nav, [class*="bottom-nav"] {
+            display: none !important;
+        }
+        .navbar-toggler {
+            display: block !important;
+        }
+    }
+
+    @media (max-width: 991.98px) {
+        .mobile-nav, .mobile-bottom-navbar, .bottom-nav, [class*="bottom-nav"] {
+            display: flex !important;
+        }
+    }
+    
+    /* কার্ডের ব্যাকগ্রাউন্ড */
+.fk-custom-card-body {
+    background: #ffffff !important;
+}
+
+/* পুরো সেকশনের ব্যাকগ্রাউন্ড */
+.fk-products-section {
+    background: #f1f3f6 !important;
+    padding: 10px 0;
+}
+
+/* প্রতিটি কার্ডের নিচে গ্যাপ */
+.product-slide {
+    margin-bottom: 10px !important;
+}
+
+/* ফর ইউ ট্যাবের কার্ডের স্টাইল */
+.fk-custom-card-body {
+    background: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    padding: 12px 15px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+}
+
+/* কার্ডের মাঝে গ্যাপ */
+.product-slide {
+    margin-bottom: 10px !important;
+}
+
+/* হোভার ইফেক্ট */
+.fk-custom-card-body:hover {
+    border-color: #2874f0 !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08) !important;
+}
+
+/* ইমেজ এরিয়া */
+.fk-custom-card-body div:first-child {
+    background: #f8f9fa !important;
+    border-radius: 6px !important;
+}
+
+
+/* ============================================
+   হেডার স্টাইল
+   ============================================ */
+.fk-home-header {
+    background: linear-gradient(180deg, #90baff 0%, #d2e4ff 70%, #ffffff 100%) !important;
+    padding: 6px 12px 8px 12px !important;
+    margin-top: -8px !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.06) !important;
+}
+
+/* ============================================
+   সার্চ বক্স
+   ============================================ */
+#liveSearchInput {
+    background: #ffffff !important;
+    border: 1px solid #c3c6d1 !important;
+    border-radius: 8px !important;
+    padding: 10px 16px 10px 42px !important;
+    height: 42px !important;
+    font-size: 14px !important;
+    color: #212121 !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+#liveSearchInput::placeholder {
+    color: #878787 !important;
+    font-weight: 400 !important;
+}
+
+#liveSearchInput:focus {
+    border-color: #2874f0 !important;
+    box-shadow: 0 0 0 2px rgba(40, 116, 240, 0.2) !important;
+}
+
+/* ============================================
+   ট্যাব বার (Tab Bar)
+   ============================================ */
+.fk-tabs-wrapper {
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border-bottom: 1px solid #e8e8e8 !important;
+    padding: 6px 0 0 0 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+}
+
+/* ট্যাব আইটেম */
+.fk-tab-item {
+    padding: 4px 2px 0 2px !important;
+    min-width: 60px !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+
+/* ট্যাব আইকন */
+.fk-tab-item .tab-icon {
+    width: 52px !important;
+    height: 52px !important;
+    background: transparent !important;
+    border-radius: 12px !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.fk-tab-item .tab-icon img {
+    width: 32px !important;
+    height: 32px !important;
+    object-fit: cover !important;
+    transition: transform 0.3s ease !important;
+}
+
+/* ট্যাব লেবেল */
+.fk-tab-item .tab-label {
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    margin-top: 2px !important;
+    white-space: nowrap !important;
+    color: #212121 !important;
+    transition: color 0.3s ease !important;
+}
+
+/* ট্যাব আন্ডারলাইন */
+.fk-tab-item .tab-underline {
+    position: absolute !important;
+    bottom: -2px !important;
+    left: 50% !important;
+    transform: translateX(-50%) scaleX(0) !important;
+    width: 24px !important;
+    height: 3px !important;
+    background: #2874f0 !important;
+    border-radius: 4px !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    opacity: 0 !important;
+}
+
+/* অ্যাক্টিভ ট্যাব */
+.fk-tab-item.active .tab-underline {
+    opacity: 1 !important;
+    transform: translateX(-50%) scaleX(1) !important;
+}
+
+.fk-tab-item.active .tab-label {
+    color: #2874f0 !important;
+    font-weight: 600 !important;
+}
+
+.fk-tab-item.active .tab-icon {
+    background: transparent !important;
+}
+
+/* হোভার ইফেক্ট */
+.fk-tab-item:hover .tab-icon {
+    transform: scale(1.05) !important;
+}
+
+.fk-tab-item:hover .tab-label {
+    color: #2874f0 !important;
+}
+
+/* ============================================
+   স্ক্রল বার লুকান
+   ============================================ */
+.fk-tabs-wrapper .overflow-x-auto {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.fk-tabs-wrapper .overflow-x-auto::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* ============================================
+   কার্ড স্টাইল
+   ============================================ */
+.fk-custom-card-body {
+    background: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    padding: 12px 15px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+    transition: all 0.2s ease !important;
+}
+
+.fk-custom-card-body:hover {
+    border-color: #2874f0 !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08) !important;
+}
+
+/* ইমেজ এরিয়া */
+.fk-custom-card-body div:first-child {
+    background: #f8f9fa !important;
+    border-radius: 6px !important;
+}
+
+/* ============================================
+   প্রোডাক্ট কার্ড
+   ============================================ */
+.product-slide {
+    margin-bottom: 10px !important;
+}
+
+/* ============================================
+   সেকশন ব্যাকগ্রাউন্ড
+   ============================================ */
+.fk-products-section {
+    background: #f1f3f6 !important;
+    padding: 10px 0 !important;
+}
+
+/* ============================================
+   বডি মার্জিন রিমুভ
+   ============================================ */
+body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #f1f3f6 !important;
+}
+
+/* ============================================
+   মোবাইল রেসপন্সিভ
+   ============================================ */
+@media (max-width: 575.98px) {
+    .fk-tab-item .tab-icon {
+        width: 44px !important;
+        height: 44px !important;
+    }
+    
+    .fk-tab-item .tab-icon img {
+        width: 26px !important;
+        height: 26px !important;
+    }
+    
+    .fk-tab-item {
+        min-width: 50px !important;
+    }
+    
+    .fk-tab-item .tab-label {
+        font-size: 10px !important;
+    }
+    
+    .fk-home-header {
+        padding: 4px 8px 6px 8px !important;
+    }
+}
+
+/* লাইভ কাউন্টডাউন স্টাইল */
+.live-countdown-wrapper {
+    animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { 
+        box-shadow: 0 4px 15px rgba(255, 63, 85, 0.35);
+    }
+    50% { 
+        box-shadow: 0 4px 25px rgba(255, 63, 85, 0.6);
+    }
+}
+
+/* কাউন্টডাউন নাম্বার */
+.live-countdown-wrapper span[id^="cd"] {
+    font-feature-settings: "tnum" 1;
+    letter-spacing: 0.5px;
+}
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // ============================================================
+        // লাইভ সার্চ - রিয়েল-টাইম
+        // ============================================================
+        const searchInput = document.getElementById('liveSearchInput');
+        const searchResults = document.getElementById('liveSearchResults');
+        const resultsList = document.getElementById('searchResultsList');
+        let searchTimeout = null;
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                
+                clearTimeout(searchTimeout);
+                
+                if (query.length < 1) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+                
+                searchTimeout = setTimeout(function() {
+                    performLiveSearch(query);
+                }, 300);
+            });
+            
+            searchInput.addEventListener('focus', function() {
+                if (this.value.trim().length > 0) {
+                    searchResults.style.display = 'block';
+                }
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.search-wrapper') && !e.target.closest('#liveSearchResults')) {
+                    searchResults.style.display = 'none';
+                }
+            });
+        }
+        
+        function performLiveSearch(query) {
+            fetch(`/products/search/?q=${encodeURIComponent(query)}&ajax=1`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.results && data.results.length > 0) {
+                        let html = '';
+                        data.results.forEach(function(item) {
+                            const imgSrc = item.image_url || '';
+                            const price = item.price || '0';
+                            html += `
+                                <a href="/products/${item.slug}/" class="text-decoration-none text-dark search-result-item">
+                                    ${imgSrc ? `<img src="${imgSrc}" alt="${item.name}" class="result-image">` : `<div class="result-image" style="background:#f0f0f0;display:flex;align-items:center;justify-content:center;"><i class="fas fa-box text-muted"></i></div>`}
+                                    <span class="result-name">${item.name}</span>
+                                    <span class="result-price">₹${price}</span>
+                                </a>
+                            `;
+                        });
+                        resultsList.innerHTML = html;
+                        searchResults.style.display = 'block';
+                    } else {
+                        resultsList.innerHTML = `<div class="result-empty"><i class="fas fa-search me-2"></i> No products found</div>`;
+                        searchResults.style.display = 'block';
+                    }
+                })
+                .catch(() => {
+                    resultsList.innerHTML = `<div class="result-empty"><i class="fas fa-exclamation-circle me-2"></i> Something went wrong</div>`;
+                    searchResults.style.display = 'block';
+                });
+        }
+        
+        document.getElementById('liveSearchBtn')?.addEventListener('click', function() {
+            const query = searchInput.value.trim();
+            if (query) {
+                window.location.href = `/products/?q=${encodeURIComponent(query)}`;
+            }
+        });
+        
+        searchInput?.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const query = this.value.trim();
+                if (query) {
+                    window.location.href = `/products/?q=${encodeURIComponent(query)}`;
+                }
+            }
+        });
+        
+        // ============================================================
+        // লোডিং স্কেলটন হাইড করে প্রোডাক্ট দেখানো
+        // ============================================================
+        function showProducts(sectionId, gridId) {
+            const loadingEl = document.getElementById(sectionId);
+            const gridEl = document.getElementById(gridId);
+            
+            if (loadingEl && gridEl) {
+                setTimeout(() => {
+                    loadingEl.style.transition = 'opacity 0.5s ease';
+                    loadingEl.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingEl.style.display = 'none';
+                        gridEl.style.display = 'block';
+                        gridEl.style.animation = 'fadeInUp 0.5s ease forwards';
+                    }, 500);
+                }, 1200);
+            }
+        }
+        
+        showProducts('loading-for-you', 'products-for-you-grid');
+        
+        {% for category in categories %}
+        showProducts('loading-{{ category.slug }}', 'products-{{ category.slug }}-grid');
+        {% endfor %}
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        // ============================================================
+        // ট্যাব ক্লিক
+        // ============================================================
+        const tabs = document.querySelectorAll('.fk-tab-item');
+        const categorySliders = document.querySelectorAll('.category-slider');
+        const productSections = document.querySelectorAll('.category-products');
+        
+        function showCategory(categorySlug) {
+            categorySliders.forEach(slider => {
+                slider.style.display = 'none';
+                slider.classList.remove('active-slider');
+            });
+            const targetSlider = document.querySelector(`.category-slider[data-category="${categorySlug}"]`);
+            if (targetSlider) {
+                targetSlider.style.display = 'block';
+                targetSlider.classList.add('active-slider');
+                const carousel = targetSlider.querySelector('.carousel');
+                if (carousel) {
+                    const bsCarousel = bootstrap.Carousel.getInstance(carousel);
+                    if (bsCarousel) {
+                        bsCarousel.to(0);
+                    }
+                }
+            }
+            
+            productSections.forEach(section => {
+                section.style.display = 'none';
+                section.classList.remove('active-products');
+                section.style.animation = 'none';
+            });
+            const targetProduct = document.querySelector(`.category-products[data-category="${categorySlug}"]`);
+            if (targetProduct) {
+                targetProduct.style.display = 'block';
+                targetProduct.classList.add('active-products');
+                targetProduct.style.animation = 'fadeInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards';
+            }
+            
+            const headerOffset = 130;
+            const targetElement = targetSlider || targetProduct;
+            if (targetElement) {
+                const elementPosition = targetElement.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+            }
+        }
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const category = this.dataset.category;
+                if (category) {
+                    showCategory(category);
+                }
+            });
+        });
+        
+        // ============================================================
+        // লোকেশন মডাল
+        // ============================================================
+        const locationWrapper = document.querySelector('.location-wrapper');
+        const locationModal = document.getElementById('locationModal');
+        const locationForm = document.getElementById('locationForm');
+        
+        if (locationWrapper) {
+            locationWrapper.addEventListener('click', function() {
+                locationModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+        }
+        
+        window.closeLocationModal = function() {
+            locationModal.style.display = 'none';
+            document.body.style.overflow = '';
+        };
+        
+        if (locationModal) {
+            locationModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeLocationModal();
+                }
+            });
+        }
+        
+        if (locationForm) {
+            locationForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const city = document.getElementById('locationCity').value.trim();
+                const area = document.getElementById('locationArea').value.trim();
+                
+                if (!city) {
+                    showToast('Please enter your city', 'error');
+                    return;
+                }
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Saving...';
+                submitBtn.disabled = true;
+                
+                fetch('/save-location/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ city: city, area: area })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('✅ Location saved successfully!', 'success');
+                        const locationText = document.querySelector('.location-text');
+                        if (locationText) {
+                            locationText.textContent = data.city + (data.area ? ', ' + data.area : '');
+                        }
+                        closeLocationModal();
+                    } else {
+                        showToast(data.message || '❌ Failed to save location', 'error');
+                    }
+                })
+                .catch(() => {
+                    showToast('❌ Something went wrong', 'error');
+                })
+                .finally(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+            });
+        }
+        
+        // ============================================================
+        // স্ক্রল ইফেক্ট
+        // ============================================================
+        const header = document.querySelector('.fk-sticky-header');
+        let lastScrollY = window.scrollY;
+        let ticking = false;
+        
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                window.requestAnimationFrame(function() {
+                    const currentScrollY = window.scrollY;
+                    
+                    if (currentScrollY > 50) {
+                        header.classList.add('sticky-scrolled');
+                    } else {
+                        header.classList.remove('sticky-scrolled');
+                    }
+                    
+                    if (currentScrollY > 120 && currentScrollY > lastScrollY) {
+                        header.style.transform = 'translateY(-100%)';
+                    } else if (currentScrollY < lastScrollY || currentScrollY < 120) {
+                        header.style.transform = 'translateY(0)';
+                    }
+                    
+                    lastScrollY = currentScrollY;
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+        
+        document.querySelectorAll('.carousel').forEach(carousel => {
+            carousel.addEventListener('mouseenter', function() {
+                const bsCarousel = bootstrap.Carousel.getInstance(this);
+                if (bsCarousel) {
+                    bsCarousel.pause();
+                }
+            });
+            carousel.addEventListener('mouseleave', function() {
+                const bsCarousel = bootstrap.Carousel.getInstance(this);
+                if (bsCarousel) {
+                    bsCarousel.cycle();
+                }
+            });
+        });
+        
+        // ============================================================
+        // এড টু কার্ট
+        // ============================================================
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const form = this.closest('form');
+                const originalText = this.innerHTML;
+                
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>';
+                this.disabled = true;
+                this.style.transform = 'scale(0.92)';
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new FormData(form)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('✅ Added to cart!', 'success');
+                        updateCartCount(data.cart_count);
+                        this.style.transform = 'scale(1.08)';
+                        setTimeout(() => this.style.transform = 'scale(1)', 300);
+                    } else {
+                        showToast(data.message || '❌ Failed to add', 'error');
+                    }
+                })
+                .catch(() => {
+                    showToast('❌ Something went wrong', 'error');
+                })
+                .finally(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        });
+        
+        // ============================================================
+        // টোস্ট
+        // ============================================================
+        window.showToast = function(message, type = 'success') {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? '#388e3c' : type === 'error' ? '#d32f2f' : '#2874f0';
+            toast.style.cssText = `
+                position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) scale(0.8);
+                padding: 14px 28px; border-radius: 12px; color: #fff; font-weight: 600;
+                z-index: 9999; font-size: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+                background: ${bgColor};
+                max-width: 90%; text-align: center;
+                font-family: 'Inter', sans-serif;
+                opacity: 0;
+                transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(-50%) scale(1)';
+            }, 10);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) scale(0.8)';
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        };
+        
+        window.updateCartCount = function(count) {
+            document.querySelectorAll('.nav-badge').forEach(el => {
+                if (el.closest('a[href*="cart"]')) {
+                    if (count > 0) {
+                        el.textContent = count;
+                        el.style.display = 'inline-block';
+                    } else {
+                        el.style.display = 'none';
+                    }
+                }
+            });
+        };
+    });
+    
+    // ============================================================
+    // অটোমেটিক লোকেশন ডিটেক্ট
+    // ============================================================
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&accept-language=bn`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.address) {
+                            const city = data.address.city || data.address.town || data.address.village || data.address.county || '';
+                            const area = data.address.suburb || data.address.neighbourhood || data.address.road || '';
+                            const state = data.address.state || '';
+                            
+                            if (city) {
+                                const locationText = document.getElementById('auto-location-text');
+                                if (locationText) {
+                                    locationText.textContent = city + (area ? ', ' + area : '');
+                                }
+                                
+                                {% if user.is_authenticated %}
+                                fetch('/update-location/', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRFToken': '{{ csrf_token }}',
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                        city: city,
+                                        area: area || state || '',
+                                        latitude: lat,
+                                        longitude: lng
+                                    })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        console.log('✅ Location auto-saved:', data.city);
+                                    }
+                                })
+                                .catch(err => console.log('⚠️ Location save error:', err));
+                                {% endif %}
+                            }
+                        }
+                    })
+                    .catch(err => console.log('⚠️ Reverse geocoding error:', err));
+            },
+            function(error) {
+                console.log('⚠️ Geolocation error:', error.message);
+                fetch('https://ipapi.co/json/')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.city) {
+                            const locationText = document.getElementById('auto-location-text');
+                            if (locationText) {
+                                locationText.textContent = data.city + (data.region ? ', ' + data.region : '');
+                            }
+                            {% if user.is_authenticated %}
+                            fetch('/update-location/', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': '{{ csrf_token }}',
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    city: data.city || '',
+                                    area: data.region || '',
+                                    latitude: data.latitude || null,
+                                    longitude: data.longitude || null
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    console.log('✅ Location auto-saved from IP:', data.city);
+                                }
+                            })
+                            .catch(err => console.log('⚠️ IP location save error:', err));
+                            {% endif %}
+                        }
+                    })
+                    .catch(err => console.log('⚠️ IP location error:', err));
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    } else {
+        fetch('https://ipapi.co/json/')
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.city) {
+                    const locationText = document.getElementById('auto-location-text');
+                    if (locationText) {
+                        locationText.textContent = data.city + (data.region ? ', ' + data.region : '');
+                    }
+                }
+            })
+            .catch(err => console.log('⚠️ IP location error:', err));
+    }
+
+
+//===========================    
+//-- live countdown -//
+//============================
+
+function startCountdown() {
+    let totalSeconds = 15 * 60; // 15 মিনিট
+    
+    const minutesEl = document.getElementById('cdMinutes');
+    const secondsEl = document.getElementById('cdSeconds');
+    
+    if (!minutesEl || !secondsEl) return;
+    
+    function update() {
+        if (totalSeconds < 0) totalSeconds = 15 * 60;
+        
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        
+        minutesEl.textContent = String(minutes).padStart(2, '0');
+        secondsEl.textContent = String(seconds).padStart(2, '0');
+        
+        totalSeconds--;
+    }
+    
+    update();
+    setInterval(update, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', startCountdown);
+</script>
+
+{% endblock %}

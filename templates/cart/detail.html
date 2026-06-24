@@ -1,0 +1,1170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shopping Cart - Flipkart{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================
+   টপ বার (Back Button + Cart Title)
+   ============================================================ -->
+<div class="cart-topbar">
+    <a href="javascript:history.back()" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back</span>
+    </a>
+    <div style="flex: 1; overflow: hidden;">
+        <h1>My Cart <span class="cart-count">({{ cart_items|length }} items)</span></h1>
+    </div>
+    {% if cart_items %}
+    <a href="{% url 'cart:cart_clear' %}" class="clear-cart-btn" onclick="return confirm('Are you sure you want to clear your cart?')">
+        <i class="fas fa-trash-alt"></i>
+    </a>
+    {% endif %}
+</div>
+
+<!-- ============================================================
+   মেইন কন্টেন্ট
+   ============================================================ -->
+<div class="container-fluid px-2 px-sm-3 py-3">
+    <div class="row g-3">
+        
+        <!-- ============================================================
+        কার্ট আইটেম লিস্ট (বাম পাশে)
+        ============================================================ -->
+        <div class="col-lg-8">
+            <div class="cart-card">
+                <div class="cart-card-header">
+                    <span class="cart-header-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </span>
+                    <span class="cart-header-title">My Cart</span>
+                    <span class="cart-header-badge">{{ cart_items|length }} items</span>
+                </div>
+                
+                {% if cart_items %}
+                
+                <!-- আইটেম লিস্ট -->
+                <div class="cart-items-list">
+                    {% for item in cart_items %}
+                    <div class="cart-item">
+                        <!-- প্রোডাক্ট ইমেজ -->
+                        <div class="cart-item-image">
+                            <div class="image-wrapper">
+                                {% if item.product.get_image_url %}
+                                <img src="{{ item.product.get_image_url }}" 
+                                     alt="{{ item.product.name }}"
+                                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23f0f0f0%22/%3E%3Ctext x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Arial%22 font-size=%2212%22 fill=%22%23999%22%3ENo Image%3C/text%3E%3C/svg%3E'">
+                                {% else %}
+                                <i class="fas fa-image"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- প্রোডাক্ট ইনফো -->
+                        <div class="cart-item-info">
+                            <h6 class="item-title">
+                                <a href="{% url 'products:product_detail' item.product.id %}" class="text-dark text-decoration-none">
+                                    {{ item.product.name }}
+                                </a>
+                            </h6>
+                            
+                            <div class="item-meta">
+                                {% if item.product.brand %}
+                                <span class="meta-tag">
+                                    <i class="fas fa-tag"></i> {{ item.product.brand.name }}
+                                </span>
+                                {% endif %}
+                                {% if item.product.category %}
+                                <span class="meta-tag">
+                                    <i class="fas fa-folder"></i> {{ item.product.category.name }}
+                                </span>
+                                {% endif %}
+                                {% if item.product.in_stock %}
+                                <span class="meta-tag in-stock">
+                                    <i class="fas fa-check-circle"></i> In Stock
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="item-price-row">
+                                <div class="price-group">
+                                    <span class="current-price">₹{{ item.product.price }}</span>
+                                    {% if item.product.old_price %}
+                                    <span class="old-price">₹{{ item.product.old_price }}</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="quantity-group">
+                                    <form method="post" action="{% url 'cart:cart_update' item.product.id %}" class="qty-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="decrease">
+                                        <button type="submit" class="qty-btn qty-btn-minus" {% if item.quantity <= 1 %}disabled{% endif %}>
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                    </form>
+                                    <span class="qty-value">{{ item.quantity }}</span>
+                                    <form method="post" action="{% url 'cart:cart_update' item.product.id %}" class="qty-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="increase">
+                                        <button type="submit" class="qty-btn qty-btn-plus" {% if item.quantity >= item.product.stock %}disabled{% endif %}>
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <div class="item-total">
+                                    <span class="total-label">Total:</span>
+                                    <span class="total-price">₹{{ item.total_price }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- রিমুভ বাটন -->
+                        <div class="cart-item-actions">
+                            <a href="{% url 'cart:cart_remove' item.product.id %}" 
+                               class="remove-btn" 
+                               onclick="return confirm('Remove this item from cart?')">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- কন্টিনিউ শপিং -->
+                <div class="cart-footer">
+                    <a href="{% url 'products:product_list' %}" class="continue-shopping-btn">
+                        <i class="fas fa-arrow-left"></i> Continue Shopping
+                    </a>
+                </div>
+                
+                {% else %}
+                
+                <!-- খালি কার্ট -->
+                <div class="empty-cart">
+                    <div class="empty-cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <h5 class="empty-cart-title">Your cart is empty!</h5>
+                    <p class="empty-cart-subtitle">Looks like you haven't added any products yet.</p>
+                    <a href="{% url 'products:product_list' %}" class="empty-cart-btn">
+                        <i class="fas fa-store"></i> Start Shopping
+                    </a>
+                </div>
+                
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- ============================================================
+        প্রাইস সামারি (ডান পাশে)
+        ============================================================ -->
+        {% if cart_items %}
+        <div class="col-lg-4">
+            <div class="summary-card">
+                <div class="summary-header">
+                    <i class="fas fa-receipt"></i> Price Details
+                </div>
+                
+                <div class="summary-body">
+                    <div class="summary-row">
+                        <span class="summary-label">Total MRP</span>
+                        <span class="summary-value">₹{{ cart.get_total_price }}</span>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span class="summary-label">Discount on MRP</span>
+                        <span class="summary-value discount">- ₹0.00</span>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span class="summary-label">Shipping</span>
+                        <span class="summary-value">
+                            {% if cart.get_total_price >= 1000 %}
+                            <span class="free-shipping">Free</span>
+                            {% else %}
+                            ₹60.00
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    {% if request.session.applied_coupon %}
+                    <div class="summary-row">
+                        <span class="summary-label">Coupon Discount</span>
+                        <span class="summary-value discount">- ₹{{ request.session.applied_coupon.discount }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="summary-divider"></div>
+                    
+                    <div class="summary-row total-row">
+                        <span class="total-label">Total Amount</span>
+                        <span class="total-value">
+                            ₹{% if cart.get_total_price >= 1000 %}{{ cart.get_total_price }}{% else %}{{ cart.get_total_price|add:60 }}{% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="summary-save">
+                        <i class="fas fa-check-circle"></i>
+                        You will save ₹{{ cart.get_total_price|add:"-1"|add:0 }} on this order
+                    </div>
+                </div>
+                
+                <!-- ফ্রি শিপিং বার্তা -->
+                {% if cart.get_total_price < 1000 %}
+                <div class="shipping-alert shipping-alert-warning">
+                    <i class="fas fa-info-circle"></i>
+                    Add ₹{{ 1000|add:cart.get_total_price|add:"-1" }} more for free shipping
+                </div>
+                {% else %}
+                <div class="shipping-alert shipping-alert-success">
+                    <i class="fas fa-truck"></i>
+                    Free shipping applied!
+                </div>
+                {% endif %}
+                
+                <!-- কুপন -->
+                <div class="coupon-section">
+                    <form id="coupon-form" class="coupon-form">
+                        {% csrf_token %}
+                        <input type="text" id="coupon-code" placeholder="Enter coupon code">
+                        <button type="submit" id="apply-coupon-btn">
+                            <i class="fas fa-gift"></i> Apply
+                        </button>
+                    </form>
+                    <div id="coupon-message" class="coupon-message"></div>
+                    
+                    {% if request.session.applied_coupon %}
+                    <div class="applied-coupon">
+                        <span class="coupon-code">{{ request.session.applied_coupon.code }}</span>
+                        <span class="coupon-discount">- ₹{{ request.session.applied_coupon.discount }}</span>
+                        <button type="button" id="remove-coupon" class="remove-coupon-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- অ্যাকশন বাটন -->
+      <!-- অ্যাকশন বাটন - ✅ সঠিক URL -->
+                <div class="summary-actions">
+    <a href="{% url 'orders:order_create' %}" class="btn-place-order">
+        <i class="fas fa-lock"></i> Place Order
+    </a>
+</div>
+                
+                <!-- পেমেন্ট মেথডস -->
+                <div class="payment-methods">
+                    <p class="payment-text">Secure Payments</p>
+                    <div class="payment-icons">
+                        <span class="payment-icon phonepe" title="PhonePe">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>PhonePe</span>
+                        </span>
+                        <span class="payment-icon googlepay" title="Google Pay">
+                            <i class="fab fa-google-pay"></i>
+                            <span>Google Pay</span>
+                        </span>
+                        <span class="payment-icon paytm" title="Paytm">
+                            <i class="fas fa-wallet"></i>
+                            <span>Paytm</span>
+                        </span>
+                    </div>
+                    <div class="trust-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>100% Secure & Encrypted</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+
+<style>
+    /* ===== টপ বার ===== */
+    .cart-topbar {
+        background: linear-gradient(135deg, #2874f0, #1a5bc7);
+        padding: 14px 20px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        box-shadow: 0 4px 20px rgba(40, 116, 240, 0.25);
+    }
+    .cart-topbar .back-btn {
+        color: #fff;
+        font-size: 18px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        padding: 6px 12px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.1);
+    }
+    .cart-topbar .back-btn:hover {
+        background: rgba(255,255,255,0.2);
+        transform: translateX(-3px);
+    }
+    .cart-topbar h1 {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .cart-topbar .cart-count {
+        font-weight: 400;
+        font-size: 14px;
+        opacity: 0.8;
+    }
+    .cart-topbar .clear-cart-btn {
+        color: rgba(255,255,255,0.8);
+        font-size: 18px;
+        transition: all 0.3s ease;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.08);
+    }
+    .cart-topbar .clear-cart-btn:hover {
+        color: #fff;
+        background: rgba(255,75,75,0.3);
+    }
+    
+    /* ===== কার্ড ===== */
+    .cart-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .cart-card:hover {
+        box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+    }
+    
+    .cart-card-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #fafbfc;
+    }
+    .cart-card-header .cart-header-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #2874f0, #1a5bc7);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 18px;
+    }
+    .cart-card-header .cart-header-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #212121;
+        flex: 1;
+    }
+    .cart-card-header .cart-header-badge {
+        background: #e8f0fe;
+        color: #2874f0;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    
+    /* ===== কার্ট আইটেম ===== */
+    .cart-item {
+        display: flex;
+        padding: 20px 24px;
+        border-bottom: 1px solid #f5f5f5;
+        transition: all 0.3s ease;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    .cart-item:hover {
+        background: #fafbfc;
+    }
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+    
+    .cart-item-image {
+        flex: 0 0 100px;
+    }
+    .cart-item-image .image-wrapper {
+        width: 100px;
+        height: 100px;
+        border: 1px solid #e8e8e8;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fafafa;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .cart-item-image .image-wrapper:hover {
+        border-color: #2874f0;
+        box-shadow: 0 4px 16px rgba(40,116,240,0.1);
+    }
+    .cart-item-image .image-wrapper img {
+        max-width: 80px;
+        max-height: 80px;
+        object-fit: contain;
+        transition: transform 0.3s ease;
+    }
+    .cart-item-image .image-wrapper img:hover {
+        transform: scale(1.05);
+    }
+    .cart-item-image .image-wrapper i {
+        font-size: 32px;
+        color: #ccc;
+    }
+    
+    .cart-item-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .cart-item-info .item-title {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #212121;
+        line-height: 1.4;
+    }
+    .cart-item-info .item-title a:hover {
+        color: #2874f0;
+    }
+    
+    .cart-item-info .item-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+    .cart-item-info .meta-tag {
+        font-size: 11px;
+        padding: 3px 10px;
+        border-radius: 12px;
+        background: #f0f0f0;
+        color: #666;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .cart-item-info .meta-tag.in-stock {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    .cart-item-info .item-price-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 16px;
+    }
+    .cart-item-info .price-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .cart-item-info .current-price {
+        font-size: 20px;
+        font-weight: 700;
+        color: #212121;
+    }
+    .cart-item-info .old-price {
+        font-size: 14px;
+        color: #999;
+        text-decoration: line-through;
+    }
+    
+    .cart-item-info .quantity-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 2px;
+        background: #fff;
+    }
+    .cart-item-info .qty-btn {
+        width: 30px;
+        height: 30px;
+        border: none;
+        border-radius: 6px;
+        background: transparent;
+        color: #666;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .cart-item-info .qty-btn:hover:not(:disabled) {
+        background: #2874f0;
+        color: #fff;
+    }
+    .cart-item-info .qty-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+    .cart-item-info .qty-value {
+        min-width: 28px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 15px;
+        color: #212121;
+    }
+    .cart-item-info .qty-form {
+        display: inline;
+    }
+    
+    .cart-item-info .item-total {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding-left: 16px;
+        border-left: 2px solid #e8e8e8;
+    }
+    .cart-item-info .total-label {
+        font-size: 13px;
+        color: #999;
+    }
+    .cart-item-info .total-price {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2874f0;
+    }
+    
+    .cart-item-actions {
+        flex: 0 0 36px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+    }
+    .cart-item-actions .remove-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        transition: all 0.3s ease;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .cart-item-actions .remove-btn:hover {
+        background: #fce4ec;
+        color: #dc3545;
+        transform: rotate(90deg);
+    }
+    
+    /* ===== কার্ট ফুটার ===== */
+    .cart-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #f0f0f0;
+        background: #fafbfc;
+    }
+    .cart-footer .continue-shopping-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        color: #666;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        background: #fff;
+    }
+    .cart-footer .continue-shopping-btn:hover {
+        border-color: #2874f0;
+        color: #2874f0;
+        transform: translateX(-3px);
+    }
+    
+    /* ===== খালি কার্ট ===== */
+    .empty-cart {
+        padding: 60px 24px;
+        text-align: center;
+    }
+    .empty-cart .empty-cart-icon {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 20px;
+        background: #f5f6f8;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        color: #ccc;
+    }
+    .empty-cart .empty-cart-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #212121;
+        margin-bottom: 8px;
+    }
+    .empty-cart .empty-cart-subtitle {
+        font-size: 14px;
+        color: #999;
+        margin-bottom: 24px;
+    }
+    .empty-cart .empty-cart-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 32px;
+        background: linear-gradient(135deg, #2874f0, #1a5bc7);
+        color: #fff;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    .empty-cart .empty-cart-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(40,116,240,0.3);
+        color: #fff;
+    }
+    
+    /* ===== সামারি কার্ড ===== */
+    .summary-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
+        position: sticky;
+        top: 100px;
+        transition: all 0.3s ease;
+    }
+    .summary-card:hover {
+        box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+    }
+    
+    .summary-header {
+        padding: 16px 20px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #212121;
+        border-bottom: 1px solid #f0f0f0;
+        background: #fafbfc;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .summary-header i {
+        color: #2874f0;
+        font-size: 18px;
+    }
+    
+    .summary-body {
+        padding: 16px 20px;
+    }
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: 14px;
+    }
+    .summary-row .summary-label {
+        color: #666;
+    }
+    .summary-row .summary-value {
+        font-weight: 500;
+        color: #212121;
+    }
+    .summary-row .summary-value.discount {
+        color: #388e3c;
+    }
+    .summary-row .summary-value .free-shipping {
+        color: #388e3c;
+        font-weight: 600;
+    }
+    
+    .summary-divider {
+        height: 1px;
+        background: #e8e8e8;
+        margin: 12px 0;
+    }
+    
+    .summary-row.total-row {
+        padding: 12px 0;
+    }
+    .summary-row.total-row .total-label {
+        font-size: 16px;
+        font-weight: 700;
+        color: #212121;
+    }
+    .summary-row.total-row .total-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #2874f0;
+    }
+    
+    .summary-save {
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .summary-save i {
+        font-size: 16px;
+    }
+    
+    /* ===== শিপিং অ্যালার্ট ===== */
+    .shipping-alert {
+        padding: 12px 20px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-top: 1px solid #f0f0f0;
+    }
+    .shipping-alert-warning {
+        background: #fff8e1;
+        color: #e65100;
+    }
+    .shipping-alert-success {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    /* ===== কুপন ===== */
+    .coupon-section {
+        padding: 16px 20px;
+        border-top: 1px solid #f0f0f0;
+    }
+    .coupon-form {
+        display: flex;
+        gap: 8px;
+    }
+    .coupon-form input {
+        flex: 1;
+        padding: 10px 14px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 13px;
+        outline: none;
+        transition: all 0.3s ease;
+        background: #fafafa;
+    }
+    .coupon-form input:focus {
+        border-color: #2874f0;
+        box-shadow: 0 0 0 3px rgba(40,116,240,0.1);
+        background: #fff;
+    }
+    .coupon-form button {
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #2874f0, #1a5bc7);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    .coupon-form button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(40,116,240,0.3);
+    }
+    
+    .coupon-message {
+        margin-top: 8px;
+        font-size: 13px;
+        min-height: 20px;
+    }
+    .coupon-message .text-success {
+        color: #2e7d32;
+    }
+    .coupon-message .text-danger {
+        color: #dc3545;
+    }
+    
+    .applied-coupon {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+        padding: 10px 14px;
+        background: #e8f5e9;
+        border-radius: 8px;
+        border-left: 3px solid #2e7d32;
+    }
+    .applied-coupon .coupon-code {
+        font-weight: 700;
+        font-size: 13px;
+        color: #212121;
+        flex: 1;
+    }
+    .applied-coupon .coupon-discount {
+        font-weight: 600;
+        color: #2e7d32;
+        font-size: 14px;
+    }
+    .applied-coupon .remove-coupon-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(220,53,69,0.1);
+        color: #dc3545;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .applied-coupon .remove-coupon-btn:hover {
+        background: #dc3545;
+        color: #fff;
+    }
+    
+    /* ===== অ্যাকশন বাটন ===== */
+    .summary-actions {
+        padding: 16px 20px;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .summary-actions .btn-place-order {
+        padding: 14px 20px;
+        background: linear-gradient(135deg, #fb641b, #f57c00);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 16px;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    .summary-actions .btn-place-order:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(251,100,27,0.3);
+        color: #fff;
+    }
+    
+    /* ===== পেমেন্ট মেথডস ===== */
+    .payment-methods {
+        padding: 14px 20px;
+        border-top: 1px solid #f0f0f0;
+        text-align: center;
+        background: #fafbfc;
+    }
+    .payment-methods .payment-text {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+    .payment-methods .payment-icons {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+    .payment-methods .payment-icon {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        font-size: 28px;
+        color: #666;
+        transition: all 0.3s ease;
+    }
+    .payment-methods .payment-icon span {
+        font-size: 10px;
+        font-weight: 500;
+        color: #999;
+    }
+    .payment-methods .payment-icon:hover {
+        transform: translateY(-4px);
+    }
+    .payment-methods .payment-icon.phonepe:hover { color: #5f259f; }
+    .payment-methods .payment-icon.googlepay:hover { color: #4285f4; }
+    .payment-methods .payment-icon.paytm:hover { color: #00baf2; }
+    
+    .trust-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 10px;
+        font-size: 12px;
+        color: #999;
+    }
+    .trust-badge i {
+        color: #2874f0;
+        font-size: 16px;
+    }
+    
+    /* ===== রেস্পন্সিভ ===== */
+    @media (max-width: 991.98px) {
+        .summary-card {
+            position: relative;
+            top: 0;
+        }
+    }
+    
+    @media (max-width: 767.98px) {
+        .cart-topbar {
+            padding: 12px 16px;
+        }
+        .cart-topbar h1 {
+            font-size: 15px;
+        }
+        .cart-topbar .cart-count {
+            font-size: 12px;
+        }
+        .cart-topbar .back-btn span {
+            display: none;
+        }
+        
+        .cart-item {
+            padding: 16px;
+            flex-wrap: wrap;
+        }
+        .cart-item-image {
+            flex: 0 0 80px;
+        }
+        .cart-item-image .image-wrapper {
+            width: 80px;
+            height: 80px;
+        }
+        .cart-item-image .image-wrapper img {
+            max-width: 60px;
+            max-height: 60px;
+        }
+        .cart-item-info .item-title {
+            font-size: 13px;
+        }
+        .cart-item-info .current-price {
+            font-size: 17px;
+        }
+        .cart-item-info .item-price-row {
+            gap: 10px;
+        }
+        .cart-item-info .item-total {
+            padding-left: 10px;
+        }
+        .cart-item-info .total-price {
+            font-size: 15px;
+        }
+        .cart-item-actions {
+            flex: 0 0 100%;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+        
+        .cart-card-header {
+            padding: 14px 16px;
+        }
+        .cart-card-header .cart-header-title {
+            font-size: 15px;
+        }
+        .cart-footer {
+            padding: 12px 16px;
+        }
+        
+        .summary-card {
+            border-radius: 12px;
+        }
+        .summary-header {
+            padding: 14px 16px;
+            font-size: 14px;
+        }
+        .summary-body {
+            padding: 12px 16px;
+        }
+        .summary-row.total-row .total-value {
+            font-size: 18px;
+        }
+        .summary-actions {
+            padding: 12px 16px;
+        }
+        .summary-actions .btn-place-order {
+            font-size: 14px;
+            padding: 12px 16px;
+        }
+        .coupon-section {
+            padding: 12px 16px;
+        }
+        .payment-methods {
+            padding: 10px 16px;
+        }
+        .shipping-alert {
+            padding: 10px 16px;
+            font-size: 12px;
+        }
+        
+        .empty-cart {
+            padding: 40px 16px;
+        }
+        .empty-cart .empty-cart-icon {
+            width: 80px;
+            height: 80px;
+            font-size: 32px;
+        }
+        .empty-cart .empty-cart-title {
+            font-size: 18px;
+        }
+    }
+    
+    @media (max-width: 575.98px) {
+        .cart-item-info .item-price-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .cart-item-info .item-total {
+            padding-left: 0;
+            border-left: none;
+        }
+        .cart-item-info .quantity-group {
+            padding: 2px 4px;
+        }
+        .cart-item-info .qty-btn {
+            width: 26px;
+            height: 26px;
+            font-size: 10px;
+        }
+        .cart-item-info .qty-value {
+            font-size: 13px;
+            min-width: 24px;
+        }
+        
+        .summary-row {
+            font-size: 13px;
+        }
+        .summary-row.total-row .total-value {
+            font-size: 16px;
+        }
+        
+        .coupon-form {
+            flex-direction: column;
+        }
+        .coupon-form button {
+            width: 100%;
+        }
+        
+        .payment-methods .payment-icons {
+            gap: 16px;
+        }
+        .payment-methods .payment-icon {
+            font-size: 22px;
+        }
+        .payment-methods .payment-icon span {
+            font-size: 9px;
+        }
+        
+        .cart-topbar .clear-cart-btn {
+            font-size: 15px;
+            padding: 6px 10px;
+        }
+    }
+</style>
+
+<!-- ============================================================
+   জাভাস্ক্রিপ্ট
+   ============================================================ -->
+{% block extra_js %}
+<script>
+    document.getElementById('coupon-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const couponCode = document.getElementById('coupon-code').value.trim();
+        const messageEl = document.getElementById('coupon-message');
+        
+        if (!couponCode) {
+            messageEl.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i> Please enter a coupon code</span>';
+            return;
+        }
+        
+        const applyBtn = this.querySelector('button');
+        applyBtn.disabled = true;
+        applyBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Applying...';
+        messageEl.innerHTML = '';
+        
+        fetch('/coupons/apply/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `coupon_code=${encodeURIComponent(couponCode)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                messageEl.innerHTML = `<span class="text-success"><i class="fas fa-check-circle me-1"></i> ${data.message}</span>`;
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                messageEl.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i> ${data.message}</span>`;
+            }
+        })
+        .catch(() => {
+            messageEl.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i> Something went wrong</span>';
+        })
+        .finally(() => {
+            applyBtn.disabled = false;
+            applyBtn.innerHTML = '<i class="fas fa-gift me-1"></i> Apply';
+        });
+    });
+    
+    document.getElementById('remove-coupon')?.addEventListener('click', function() {
+        fetch('/coupons/remove/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Coupon removed successfully', 'success');
+                setTimeout(() => location.reload(), 500);
+            }
+        })
+        .catch(() => {
+            showToast('Something went wrong', 'error');
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

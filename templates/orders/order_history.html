@@ -1,0 +1,446 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order History - Flipkart{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-md-4 py-4">
+
+    <!-- ===== Header Section ===== -->
+    <div class="history-header-card animate-slide-down mb-4">
+        <div class="d-flex align-items-center flex-wrap gap-3">
+            <a href="javascript:history.back()" class="btn-back-modern" title="Go Back">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="header-text">
+                <h4 class="fw-800 mb-1 page-title">
+                    <span class="gradient-text"><i class="fas fa-history me-2"></i>Order History</span>
+                </h4>
+                <p class="text-muted mb-0 subtitle">Manage and track your recent purchases</p>
+            </div>
+            <div class="ms-sm-auto">
+                <span class="history-count-badge">
+                    <i class="fas fa-box-open me-2"></i>{{ orders|length }} Orders
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            {% if orders %}
+            <!-- ===== Modern Responsive Desktop/Tablet Table & Mobile Card Layout ===== -->
+            <div class="history-main-container animate-fade-in">
+                
+                <!-- Desktop & Tablet View -->
+                <div class="table-responsive d-none d-md-block">
+                    <table class="modern-history-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date Placed</th>
+                                <th>Items</th>
+                                <th>Total Amount</th>
+                                <th>Payment Method</th>
+                                <th>Delivery Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr class="animate-slide-right" style="animation-delay: {{ forloop.counter|add:'0.05' }}s;">
+                                <td>
+                                    <span class="modern-order-id">#{{ order.order_number|truncatechars:8 }}</span>
+                                </td>
+                                <td class="date-text">{{ order.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <span class="item-count-pill">{{ order.items_count }} Items</span>
+                                </td>
+                                <td class="modern-total-price">₹{{ order.total }}</td>
+                                <td>
+                                    <span class="modern-badge payment-{{ order.payment_status }}">
+                                        <span class="dot"></span>{{ order.get_payment_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="modern-badge status-{{ order.status }}">
+                                        <span class="dot"></span>{{ order.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'orders:order_detail' order.id %}" class="btn-action-view" title="View Details">
+                                        <span>Details</span><i class="fas fa-chevron-right ms-2"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile View Cards (App-like Experience) -->
+                <div class="d-block d-md-none mobile-orders-wrapper">
+                    {% for order in orders %}
+                    <div class="mobile-order-card animate-slide-right" style="animation-delay: {{ forloop.counter|add:'0.05' }}s;">
+                        <div class="card-header-mob">
+                            <span class="modern-order-id">#{{ order.order_number|truncatechars:8 }}</span>
+                            <span class="date-text-mob">{{ order.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="card-body-mob">
+                            <div class="mob-row">
+                                <span class="mob-label">Items:</span>
+                                <span class="mob-val fw-600">{{ order.items_count }} pcs</span>
+                            </div>
+                            <div class="mob-row">
+                                <span class="mob-label">Total:</span>
+                                <span class="modern-total-price">₹{{ order.total }}</span>
+                            </div>
+                            <div class="mob-badges-grid">
+                                <span class="modern-badge payment-{{ order.payment_status }}">
+                                    <span class="dot"></span>{{ order.get_payment_status_display }}
+                                </span>
+                                <span class="modern-badge status-{{ order.status }}">
+                                    <span class="dot"></span>{{ order.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-footer-mob">
+                            <a href="{% url 'orders:order_detail' order.id %}" class="btn-action-view w-100 justify-content-center">
+                                <span>View Order Details</span><i class="fas fa-chevron-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- ===== Secure Trust Note ===== -->
+                <div class="modern-trust-footer">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="shield-icon-wrapper">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-700 text-dark" style="font-size: 14px;">End-to-End Secure Transactions</h6>
+                            <p class="mb-0 text-muted" style="font-size: 12px;">Your order and payment history are encrypted using 256-bit SSL protocols.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% else %}
+            <!-- ===== Sleek Empty State ===== -->
+            <div class="modern-empty-state text-center animate-fade-in">
+                <div class="empty-icon-glow">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <h4 class="fw-800 text-dark mt-4">Your order history is clear</h4>
+                <p class="text-muted mx-auto" style="max-width: 400px; font-size: 15px;">Looks like you haven't placed any orders yet. Discover our latest arrivals and premium deals!</p>
+                <a href="{% url 'products:product_list' %}" class="btn-explore-now mt-2">
+                    <span>Start Shopping</span><i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ==========================================================================
+       Google Fonts & Global Variables 
+       ========================================================================== */
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+    :root {
+        --primary-gradient: linear-gradient(135deg, #2874f0, #004dc8);
+        --secondary-gradient: linear-gradient(135deg, #fb641b, #f44336);
+        --surface-color: #ffffff;
+        --background-soft: #f8fafc;
+        --border-color: #e2e8f0;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Apply custom font inside this block scope if needed, or leave to inherit */
+    .container-fluid {
+        font-family: var(--font-family);
+        color: var(--text-main);
+    }
+
+    .fw-800 { font-weight: 800; }
+    .fw-700 { font-weight: 700; }
+    .fw-600 { font-weight: 600; }
+
+    /* ==========================================================================
+       Smooth Micro-Animations
+       ========================================================================== */
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideRight {
+        from { opacity: 0; transform: translateX(-12px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes pulseGlow {
+        0% { box-shadow: 0 0 0 0 rgba(40, 116, 240, 0.2); }
+        70% { box-shadow: 0 0 0 12px rgba(40, 116, 240, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(40, 116, 240, 0); }
+    }
+    
+    .animate-slide-down { animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-fade-in { animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-slide-right { animation: slideRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    
+    /* ==========================================================================
+       Modern Header Styling
+       ========================================================================== */
+    .history-header-card {
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        padding: 20px 24px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    }
+    .gradient-text {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .btn-back-modern {
+        width: 42px; height: 42px;
+        border-radius: 12px;
+        background: var(--background-soft);
+        border: 1px solid var(--border-color);
+        display: inline-flex; align-items: center; justify-content: center;
+        color: var(--text-main); font-size: 16px;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .btn-back-modern:hover {
+        background: var(--primary-gradient);
+        color: #fff;
+        border-color: transparent;
+        transform: translateX(-3px);
+    }
+    .history-count-badge {
+        background: #eff6ff;
+        color: #1d4ed8;
+        padding: 8px 18px;
+        border-radius: 99px;
+        font-size: 14px;
+        font-weight: 700;
+        border: 1px solid #dbeafe;
+        display: inline-flex; align-items: center;
+    }
+
+    /* ==========================================================================
+       Main Container & Table Structure
+       ========================================================================== */
+    .history-main-container {
+        background: var(--surface-color);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+    .modern-history-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .modern-history-table th {
+        background: var(--background-soft);
+        padding: 16px 24px;
+        font-weight: 700;
+        color: var(--text-muted);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.75px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .modern-history-table td {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+        font-size: 14px;
+    }
+    .modern-history-table tbody tr {
+        transition: all 0.25s ease;
+    }
+    .modern-history-table tbody tr:hover {
+        background: #fdfeff;
+        background-image: linear-gradient(to right, rgba(40,116,240,0.02), rgba(0,0,0,0));
+    }
+
+    /* Content Badges & Elements */
+    .modern-order-id {
+        font-family: monospace;
+        font-weight: 700;
+        color: var(--text-main);
+        background: #f1f5f9;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        border: 1px solid #e2e8f0;
+    }
+    .date-text { color: #334155; font-weight: 500; }
+    .item-count-pill {
+        background: #f8fafc;
+        border: 1px solid var(--border-color);
+        color: #475569;
+        padding: 4px 12px;
+        border-radius: 99px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .modern-total-price {
+        font-weight: 800;
+        color: var(--text-main);
+        font-size: 16px;
+    }
+
+    /* Dynamic Badges Layout */
+    .modern-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 99px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+    }
+    .modern-badge .dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+    }
+
+    /* Payment & Status Design Updates */
+    .payment-paid, .status-delivered { background: #ecfdf5; color: #065f46; }
+    .payment-paid .dot, .status-delivered .dot { background: #10b981; }
+
+    .payment-pending, .status-payment_pending, .status-processing { background: #fffbeb; color: #92400e; }
+    .payment-pending .dot, .status-payment_pending .dot, .status-processing .dot { background: #f59e0b; }
+
+    .status-shipped { background: #fef4ff; color: #6b21a8; }
+    .status-shipped .dot { background: #d946ef; }
+
+    .payment-failed, .status-cancelled { background: #fef2f2; color: #991b1b; }
+    .payment-failed .dot, .status-cancelled .dot { background: #ef4444; }
+
+    /* Action Buttons */
+    .btn-action-view {
+        display: inline-flex; align-items: center;
+        padding: 8px 16px;
+        background: var(--background-soft);
+        border: 1px solid var(--border-color);
+        color: #475569;
+        border-radius: 10px;
+        font-size: 13px; font-weight: 600;
+        text-decoration: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-action-view:hover {
+        background: var(--primary-gradient);
+        color: #fff !important;
+        border-color: transparent;
+        box-shadow: 0 4px 12px rgba(40,116,240,0.2);
+    }
+
+    /* ==========================================================================
+       Trust Footer Component
+       ========================================================================== */
+    .modern-trust-footer {
+        padding: 20px 24px;
+        background: #fafafa;
+        border-top: 1px solid var(--border-color);
+    }
+    .shield-icon-wrapper {
+        width: 40px; height: 40px;
+        background: #eff6ff;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        color: #2874f0; font-size: 18px;
+    }
+
+    /* ==========================================================================
+       Empty State Configuration
+       ========================================================================== */
+    .modern-empty-state {
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 80px 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+    }
+    .empty-icon-glow {
+        width: 90px; height: 90px; margin: 0 auto;
+        background: #f1f5f9; border-radius: 30px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 36px; color: #94a3b8;
+        animation: pulseGlow 2s infinite;
+    }
+    .btn-explore-now {
+        display: inline-flex; align-items: center;
+        padding: 14px 36px;
+        background: var(--secondary-gradient);
+        color: #fff; border-radius: 14px;
+        font-weight: 700; font-size: 15px;
+        text-decoration: none;
+        box-shadow: 0 6px 20px rgba(251,100,27,0.25);
+        transition: all 0.3s ease;
+    }
+    .btn-explore-now:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(251,100,27,0.35);
+        color: #fff;
+    }
+
+    /* ==========================================================================
+       Mobile Optimization (Responsive Utilities)
+       ========================================================================== */
+    @media (max-width: 767.98px) {
+        .mobile-orders-wrapper {
+            padding: 12px;
+            display: flex; flex-direction: column; gap: 14px;
+            background: #f8fafc;
+        }
+        .mobile-order-card {
+            background: var(--surface-color);
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            overflow: hidden;
+        }
+        .card-header-mob {
+            background: #fafbfe;
+            padding: 12px 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .date-text-mob { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+        .card-body-mob { padding: 16px; }
+        .mob-row {
+            display: flex; justify-content: space-between; margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .mob-label { color: var(--text-muted); }
+        .mob-badges-grid {
+            display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px;
+        }
+        .card-footer-mob {
+            padding: 12px 16px;
+            background: #fafbfe;
+            border-top: 1px solid var(--border-color);
+        }
+        .history-header-card { padding: 16px; }
+        .page-title { font-size: 18px; }
+        .subtitle { font-size: 12px; }
+    }
+</style>
+{% endblock %}

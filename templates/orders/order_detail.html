@@ -1,0 +1,1277 @@
+<!-- orders/templates/orders/order_detail.html -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order #{{ order.order_number }} - Flipkart{% endblock %}
+
+{% block content %}
+<style>
+    /* ============================================================
+    PREMIUM DARK THEME WITH GLASSMORPHISM
+    ============================================================ */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        background: #0a0a1a !important;
+        font-family: 'Inter', sans-serif !important;
+        min-height: 100vh;
+        color: #ffffff;
+    }
+    
+    /* ===== ANIMATIONS ===== */
+    @keyframes floatUp {
+        0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes slideInLeft {
+        0% { opacity: 0; transform: translateX(-30px); }
+        100% { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideInRight {
+        0% { opacity: 0; transform: translateX(30px); }
+        100% { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes pulseGlow {
+        0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
+        50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.5); }
+    }
+    @keyframes shimmerBg {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+    }
+    @keyframes rotateGradient {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .animate-float { animation: floatUp 0.6s ease forwards; opacity: 0; }
+    .animate-left { animation: slideInLeft 0.5s ease forwards; opacity: 0; }
+    .animate-right { animation: slideInRight 0.5s ease forwards; opacity: 0; }
+    
+    /* ============================================================
+    GLASSMORPHISM CARDS
+    ============================================================ */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        position: relative;
+    }
+    .glass-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.03), rgba(139, 92, 246, 0.03));
+        pointer-events: none;
+        border-radius: 20px;
+    }
+    .glass-card:hover {
+        transform: translateY(-6px) scale(1.01);
+        border-color: rgba(59, 130, 246, 0.15);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+    
+    /* ============================================================
+    ORDER HEADER
+    ============================================================ */
+    .order-header-card {
+        background: linear-gradient(135deg, #0d0d2b, #1a1a3e);
+        border: 1px solid rgba(59, 130, 246, 0.15);
+        border-radius: 24px;
+        padding: 28px 32px;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+    .order-header-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 60%;
+        height: 200%;
+        background: radial-gradient(ellipse, rgba(59, 130, 246, 0.08), transparent 70%);
+        pointer-events: none;
+    }
+    .order-header-card::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 40%;
+        height: 150%;
+        background: radial-gradient(ellipse, rgba(139, 92, 246, 0.06), transparent 70%);
+        pointer-events: none;
+    }
+    
+    .order-header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 16px;
+        position: relative;
+        z-index: 1;
+    }
+    .order-number {
+        font-size: 22px;
+        font-weight: 800;
+        margin: 0;
+        background: linear-gradient(135deg, #60a5fa, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: 0.5px;
+    }
+    .order-number::before {
+        content: '#';
+        -webkit-text-fill-color: #60a5fa;
+    }
+    .order-date {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.5);
+        margin: 4px 0 0;
+        font-weight: 400;
+        letter-spacing: 0.3px;
+    }
+    
+    .order-status-badge {
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        z-index: 1;
+        backdrop-filter: blur(10px);
+    }
+    .order-status-badge i { font-size: 8px; }
+    .order-status-badge.status-payment_pending {
+        background: rgba(251, 146, 60, 0.2);
+        color: #fb923c;
+        border: 1px solid rgba(251, 146, 60, 0.3);
+    }
+    .order-status-badge.status-processing {
+        background: rgba(96, 165, 250, 0.2);
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.3);
+    }
+    .order-status-badge.status-payment_verified {
+        background: rgba(74, 222, 128, 0.2);
+        color: #4ade80;
+        border: 1px solid rgba(74, 222, 128, 0.3);
+    }
+    .order-status-badge.status-shipped {
+        background: rgba(192, 132, 252, 0.2);
+        color: #c084fc;
+        border: 1px solid rgba(192, 132, 252, 0.3);
+    }
+    .order-status-badge.status-delivered {
+        background: rgba(74, 222, 128, 0.2);
+        color: #4ade80;
+        border: 1px solid rgba(74, 222, 128, 0.3);
+    }
+    .order-status-badge.status-cancelled {
+        background: rgba(248, 113, 113, 0.2);
+        color: #f87171;
+        border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+    
+    .order-header-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 28px;
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        position: relative;
+        z-index: 1;
+    }
+    .meta-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.35);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 500;
+    }
+    .meta-value {
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 15px;
+        display: block;
+        margin-top: 2px;
+    }
+    .meta-value.total {
+        background: linear-gradient(135deg, #60a5fa, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 20px;
+        font-weight: 800;
+    }
+    .meta-value.payment-pending { color: #fb923c; }
+    .meta-value.payment-paid { color: #4ade80; }
+    .meta-value.payment-failed { color: #f87171; }
+    
+    /* ============================================================
+    TIMELINE
+    ============================================================ */
+    .timeline-card {
+        padding: 24px 28px;
+        margin-bottom: 20px;
+    }
+    .timeline-header {
+        font-size: 16px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .timeline-header i {
+        color: #60a5fa;
+        font-size: 18px;
+    }
+    
+    .timeline-item {
+        display: flex;
+        gap: 16px;
+        padding: 12px 0;
+        border-left: 2px solid rgba(255, 255, 255, 0.06);
+        padding-left: 24px;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    .timeline-item:last-child { border-left-color: transparent; }
+    .timeline-item:hover { transform: translateX(6px); }
+    
+    .timeline-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+        margin-left: -42px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    .timeline-icon:hover { transform: scale(1.15) rotate(-5deg); }
+    
+    .icon-order_created { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .icon-payment_verified { background: linear-gradient(135deg, #22c55e, #15803d); }
+    .icon-order_processing { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+    .icon-order_shipped { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .icon-order_delivered { background: linear-gradient(135deg, #22c55e, #15803d); }
+    .icon-order_cancelled { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    
+    .timeline-title {
+        font-weight: 600;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    .timeline-desc {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 13px;
+        margin: 2px 0;
+    }
+    .timeline-time {
+        color: rgba(255, 255, 255, 0.25);
+        font-size: 12px;
+        font-weight: 400;
+    }
+    
+    /* ============================================================
+    ORDER ITEMS
+    ============================================================ */
+    .items-card {
+        padding: 0;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .items-header {
+        padding: 20px 28px;
+        font-size: 16px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        background: rgba(255, 255, 255, 0.02);
+    }
+    .items-header i { color: #60a5fa; margin-right: 10px; }
+    .items-badge {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+        padding: 4px 14px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .items-body { padding: 0; }
+    
+    /* Table */
+    .items-table-wrapper {
+        padding: 0 28px;
+        overflow-x: auto;
+    }
+    .items-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 14px;
+    }
+    .items-table thead th {
+        padding: 16px 12px;
+        text-align: left;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .items-table tbody tr {
+        transition: all 0.3s ease;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+    .items-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.02);
+        transform: scale(1.01);
+    }
+    .items-table tbody td {
+        padding: 14px 12px;
+        vertical-align: middle;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    .items-table tbody tr:last-child td { border-bottom: none; }
+    
+    .product-cell {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 200px;
+    }
+    .product-thumb {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .product-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .product-img-placeholder {
+        color: rgba(255, 255, 255, 0.15);
+        font-size: 20px;
+    }
+    .product-name {
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .price-cell { font-weight: 400; color: rgba(255, 255, 255, 0.6); }
+    .qty-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.04);
+        padding: 2px 14px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .total-cell {
+        font-weight: 700;
+        color: #60a5fa;
+        font-size: 15px;
+    }
+    
+    /* Mobile */
+    .items-mobile { padding: 16px 20px; }
+    .mobile-item-card {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin-bottom: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        transition: all 0.3s ease;
+    }
+    .mobile-item-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateX(4px);
+    }
+    .mobile-item-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .product-thumb-sm {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .product-img-sm {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .product-img-placeholder-sm { color: rgba(255, 255, 255, 0.15); font-size: 16px; }
+    .mobile-item-info { flex: 1; }
+    .mobile-item-name {
+        display: block;
+        font-weight: 600;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    .mobile-item-qty {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.3);
+    }
+    .mobile-item-price {
+        font-weight: 700;
+        font-size: 16px;
+        color: #60a5fa;
+    }
+    .mobile-item-details {
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px solid rgba(255, 255, 255, 0.03);
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Summary */
+    .items-summary {
+        padding: 18px 28px 24px;
+        border-top: 1px solid rgba(255, 255, 255, 0.04);
+        background: rgba(255, 255, 255, 0.01);
+    }
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.5);
+    }
+    .summary-row.discount { color: #4ade80; font-weight: 600; }
+    .shipping-cost { color: #4ade80; font-weight: 500; }
+    .summary-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.04);
+        margin: 10px 0;
+    }
+    .summary-row.grand-total {
+        font-size: 18px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.9);
+        padding-top: 10px;
+    }
+    .summary-row.grand-total span:last-child {
+        background: linear-gradient(135deg, #60a5fa, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 22px;
+    }
+    
+    /* ============================================================
+    SIDEBAR
+    ============================================================ */
+    .sidebar-card {
+        padding: 20px 24px;
+        margin-bottom: 20px;
+    }
+    .sidebar-header {
+        font-size: 15px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .sidebar-header i { color: #60a5fa; font-size: 16px; }
+    
+    /* Shipping */
+    .shipping-address {
+        display: flex;
+        gap: 14px;
+        padding: 14px 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        margin-bottom: 14px;
+    }
+    .shipping-address i {
+        color: #60a5fa;
+        font-size: 18px;
+        margin-top: 2px;
+    }
+    .shipping-address p {
+        margin: 0;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.6;
+    }
+    .shipping-detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .shipping-detail-item {
+        background: rgba(255, 255, 255, 0.02);
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+    .shipping-detail-item.full-width { grid-column: 1 / -1; }
+    .detail-label {
+        display: block;
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.25);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 600;
+    }
+    .detail-value {
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 14px;
+        margin-top: 2px;
+    }
+    .detail-value i { color: #60a5fa; margin-right: 4px; }
+    
+    /* ============================================================
+    PAYMENT CARD - PREMIUM
+    ============================================================ */
+    .payment-card {
+        background: linear-gradient(145deg, rgba(251, 146, 60, 0.08), rgba(234, 88, 12, 0.05));
+        border: 1px solid rgba(251, 146, 60, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+    .payment-card::before {
+        content: '';
+        position: absolute;
+        top: -60%;
+        right: -30%;
+        width: 80%;
+        height: 200%;
+        background: radial-gradient(ellipse, rgba(251, 146, 60, 0.06), transparent 70%);
+        pointer-events: none;
+    }
+    .payment-header {
+        background: linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(234, 88, 12, 0.1));
+        border-bottom: 1px solid rgba(251, 146, 60, 0.1);
+        padding-bottom: 14px;
+        margin-bottom: 16px;
+    }
+    .payment-header i { color: #fb923c; }
+    .payment-required-badge {
+        background: rgba(251, 146, 60, 0.2);
+        padding: 2px 14px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-left: auto;
+        color: #fb923c;
+        border: 1px solid rgba(251, 146, 60, 0.2);
+        animation: pulseGlow 2s ease-in-out infinite;
+    }
+    
+    .payment-method-display {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 14px 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        margin-bottom: 16px;
+    }
+    .payment-method-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+    }
+    .payment-method-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+    .payment-method-name {
+        font-weight: 700;
+        font-size: 17px;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    .payment-method-sub {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.3);
+        font-weight: 400;
+    }
+    
+    .amount-info {
+        display: flex;
+        justify-content: center;
+        align-items: baseline;
+        gap: 12px;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        margin-bottom: 18px;
+    }
+    .amount-label {
+        font-size: 15px;
+        color: rgba(255, 255, 255, 0.3);
+        font-weight: 500;
+    }
+    .amount-value {
+        font-size: 28px;
+        font-weight: 900;
+        background: linear-gradient(135deg, #60a5fa, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    /* ===== PAY NOW BUTTON - GRADIENT GLOW ===== */
+    .btn-pay-now {
+        padding: 16px 24px;
+        background: linear-gradient(135deg, #fb641b, #ea580c);
+        color: #fff;
+        border: none;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 17px;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        box-shadow: 0 4px 30px rgba(251, 100, 27, 0.3);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .btn-pay-now::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+        transform: rotate(45deg);
+        transition: all 0.5s ease;
+    }
+    .btn-pay-now:hover::before {
+        left: 100%;
+    }
+    .btn-pay-now:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 8px 50px rgba(251, 100, 27, 0.4);
+        color: #fff;
+    }
+    .btn-pay-now:active {
+        transform: scale(0.97);
+    }
+    .btn-pay-now i {
+        font-size: 18px;
+    }
+    
+    .payment-security {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.3);
+    }
+    .payment-security span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .payment-security i {
+        color: #60a5fa;
+        font-size: 12px;
+    }
+    
+    /* ============================================================
+    TRUST CARD
+    ============================================================ */
+    .trust-card {
+        border: 1px solid rgba(74, 222, 128, 0.08);
+        background: rgba(74, 222, 128, 0.02);
+    }
+    .trust-header {
+        color: #4ade80;
+        border-bottom: 1px solid rgba(74, 222, 128, 0.06);
+        padding-bottom: 14px;
+        margin-bottom: 16px;
+    }
+    .trust-header i { color: #4ade80; }
+    
+    .trust-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .trust-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        transition: all 0.3s ease;
+    }
+    .trust-item:hover {
+        transform: translateX(4px);
+        background: rgba(255, 255, 255, 0.04);
+    }
+    .trust-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: rgba(74, 222, 128, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #4ade80;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+    .trust-text strong {
+        display: block;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    .trust-text span {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* ============================================================
+    TOAST
+    ============================================================ */
+    .fk-toast-message {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 16px 32px;
+        border-radius: 16px;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        z-index: 99999;
+        background: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+        max-width: 90%;
+        text-align: center;
+        animation: toastSlideUp 0.4s ease;
+    }
+    .fk-toast-message.success { border-color: rgba(74, 222, 128, 0.2); }
+    .fk-toast-message.success i { color: #4ade80; }
+    .fk-toast-message.error { border-color: rgba(248, 113, 113, 0.2); }
+    .fk-toast-message.error i { color: #f87171; }
+    @keyframes toastSlideUp {
+        from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    
+    /* ============================================================
+    RESPONSIVE
+    ============================================================ */
+    @media (max-width: 991.98px) {
+        .order-header-card { padding: 20px 24px; }
+        .order-number { font-size: 19px; }
+        .order-header-meta { gap: 20px; }
+    }
+    
+    @media (max-width: 767.98px) {
+        .order-header-card { padding: 16px 18px; border-radius: 18px; }
+        .order-header-top { flex-direction: column; }
+        .order-number { font-size: 17px; }
+        .order-header-meta { gap: 12px; flex-direction: column; }
+        .meta-value.total { font-size: 17px; }
+        .order-status-badge { font-size: 12px; padding: 6px 16px; }
+        
+        .glass-card { border-radius: 16px; }
+        .timeline-card, .items-card, .sidebar-card { padding: 16px 18px; }
+        .items-header { padding: 16px 18px; font-size: 14px; }
+        .items-table-wrapper { display: none; }
+        .items-mobile { display: block; padding: 12px 16px; }
+        .items-summary { padding: 14px 18px 18px; }
+        .summary-row.grand-total { font-size: 16px; }
+        .summary-row.grand-total span:last-child { font-size: 19px; }
+        .sidebar-body { padding: 0; }
+        .shipping-detail-grid { grid-template-columns: 1fr; }
+        .payment-method-display { flex-direction: column; text-align: center; }
+        .amount-value { font-size: 24px; }
+        .btn-pay-now { font-size: 15px; padding: 14px 20px; }
+        .payment-security { font-size: 11px; gap: 12px; flex-wrap: wrap; }
+        .trust-item { padding: 10px 14px; }
+    }
+    
+    @media (max-width: 575.98px) {
+        .order-header-card { padding: 14px 16px; border-radius: 14px; }
+        .order-number { font-size: 15px; }
+        .order-date { font-size: 11px; }
+        .order-status-badge { font-size: 10px; padding: 4px 12px; }
+        .meta-label { font-size: 10px; }
+        .meta-value { font-size: 13px; }
+        .meta-value.total { font-size: 15px; }
+        .order-header-meta { gap: 8px; }
+        
+        .timeline-card, .items-card, .sidebar-card { padding: 12px 14px; border-radius: 14px; }
+        .timeline-item { padding: 8px 0; padding-left: 18px; }
+        .timeline-icon { width: 28px; height: 28px; font-size: 11px; margin-left: -34px; }
+        .timeline-title { font-size: 13px; }
+        .timeline-desc { font-size: 12px; }
+        .timeline-time { font-size: 10px; }
+        
+        .items-header { padding: 12px 14px; font-size: 13px; }
+        .items-mobile { padding: 8px 12px; }
+        .mobile-item-card { padding: 10px 12px; }
+        .mobile-item-name { font-size: 13px; }
+        .mobile-item-price { font-size: 14px; }
+        .items-summary { padding: 10px 14px 14px; }
+        .summary-row { font-size: 13px; }
+        .summary-row.grand-total { font-size: 14px; }
+        .summary-row.grand-total span:last-child { font-size: 17px; }
+        
+        .sidebar-card { padding: 14px 16px; }
+        .shipping-address { padding: 10px 12px; }
+        .shipping-address p { font-size: 13px; }
+        .shipping-detail-item { padding: 8px 12px; }
+        .detail-value { font-size: 13px; }
+        
+        .payment-method-display { padding: 10px 12px; }
+        .payment-method-icon { width: 40px; height: 40px; }
+        .payment-method-name { font-size: 15px; }
+        .amount-info { padding: 12px; }
+        .amount-value { font-size: 20px; }
+        .btn-pay-now { font-size: 14px; padding: 12px 16px; border-radius: 12px; }
+        .payment-security { font-size: 10px; gap: 8px; padding: 8px 12px; }
+        .trust-item { padding: 8px 12px; }
+        .trust-icon { width: 32px; height: 32px; font-size: 14px; }
+        .trust-text strong { font-size: 13px; }
+        .trust-text span { font-size: 11px; }
+        
+        .fk-toast-message { padding: 12px 20px; font-size: 13px; bottom: 80px; }
+    }
+    
+    @media (max-width: 380px) {
+        .order-number { font-size: 13px; }
+        .payment-header { flex-wrap: wrap; gap: 6px; }
+        .payment-required-badge { margin-left: 0; }
+        .amount-value { font-size: 18px; }
+        .btn-pay-now { font-size: 13px; padding: 10px 14px; gap: 8px; }
+        .payment-security { flex-direction: column; align-items: center; gap: 4px; }
+        .trust-grid { gap: 6px; }
+        .mobile-item-header { gap: 8px; }
+        .mobile-item-name { font-size: 12px; }
+        .mobile-item-price { font-size: 13px; }
+    }
+</style>
+
+<!-- ============================================================
+MAIN CONTENT
+============================================================ -->
+<div class="container-fluid px-2 px-sm-3 py-3" style="max-width: 1200px;">
+
+    <!-- ===== ORDER HEADER ===== -->
+    <div class="order-header-card animate-float">
+        <div class="order-header-top">
+            <div>
+                <h5 class="order-number">{{ order.order_number }}</h5>
+                <p class="order-date"><i class="far fa-calendar-alt" style="margin-right: 6px;"></i> {{ order.created_at|date:"F d, Y h:i A" }}</p>
+            </div>
+            <div class="order-status-badge status-{{ order.status }}">
+                <i class="fas fa-circle"></i> {{ order.get_status_display }}
+            </div>
+        </div>
+        
+        <div class="order-header-meta">
+            <div>
+                <span class="meta-label">Payment Status</span>
+                <span class="meta-value payment-{{ order.payment_status }}">{{ order.get_payment_status_display }}</span>
+            </div>
+            <div>
+                <span class="meta-label">Payment Method</span>
+                <span class="meta-value">{{ order.payment_method_name|default:order.payment_method.name|default:'-' }}</span>
+            </div>
+            <div>
+                <span class="meta-label">Total Amount</span>
+                <span class="meta-value total">₹{{ order.total }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            
+            <!-- ===== TIMELINE ===== -->
+            <div class="glass-card timeline-card animate-left">
+                <div class="timeline-header">
+                    <i class="fas fa-clock"></i> Order Timeline
+                </div>
+                <div class="timeline-body">
+                    {% for event in timeline %}
+                    <div class="timeline-item" style="animation-delay: {{ forloop.counter|add:'0.1' }}s;">
+                        <div class="timeline-icon icon-{{ event.event }}">
+                            <i class="fas fa-{% if event.event == 'order_created' %}plus{% elif event.event == 'payment_verified' %}check-circle{% elif event.event == 'order_processing' %}cogs{% elif event.event == 'order_shipped' %}truck{% elif event.event == 'order_delivered' %}home{% elif event.event == 'order_cancelled' %}ban{% else %}circle{% endif %}"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">{{ event.get_event_display }}</div>
+                            <div class="timeline-desc">{{ event.description }}</div>
+                            <div class="timeline-time"><i class="far fa-clock" style="margin-right: 4px;"></i> {{ event.created_at|date:"F d, Y h:i A" }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4" style="color: rgba(255,255,255,0.2);">No timeline events yet</div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- ===== ORDER ITEMS ===== -->
+            <div class="glass-card items-card animate-left" style="animation-delay: 0.15s;">
+                <div class="items-header">
+                    <span><i class="fas fa-box"></i> Order Items</span>
+                    <span class="items-badge">{{ order.items.count }} items</span>
+                </div>
+                <div class="items-body">
+                    <!-- Desktop -->
+                    <div class="items-table-wrapper d-none d-md-block">
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items.all %}
+                                <tr>
+                                    <td class="product-cell">
+                                        <div class="product-thumb">
+                                            {% if item.product.image %}
+                                            <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}" class="product-img">
+                                            {% else %}
+                                            <div class="product-img-placeholder"><i class="fas fa-box"></i></div>
+                                            {% endif %}
+                                        </div>
+                                        <span class="product-name">{{ item.product_name }}</span>
+                                    </td>
+                                    <td class="price-cell">₹{{ item.price }}</td>
+                                    <td class="qty-cell"><span class="qty-badge">{{ item.quantity }}</span></td>
+                                    <td class="total-cell">₹{{ item.total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Mobile -->
+                    <div class="items-mobile d-md-none">
+                        {% for item in order.items.all %}
+                        <div class="mobile-item-card">
+                            <div class="mobile-item-header">
+                                <div class="product-thumb-sm">
+                                    {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}" class="product-img-sm">
+                                    {% else %}
+                                    <div class="product-img-placeholder-sm"><i class="fas fa-box"></i></div>
+                                    {% endif %}
+                                </div>
+                                <div class="mobile-item-info">
+                                    <span class="mobile-item-name">{{ item.product_name }}</span>
+                                    <span class="mobile-item-qty">Qty: {{ item.quantity }}</span>
+                                </div>
+                                <div class="mobile-item-price">₹{{ item.total }}</div>
+                            </div>
+                            <div class="mobile-item-details">Price: ₹{{ item.price }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Summary -->
+                    <div class="items-summary">
+                        <div class="summary-row"><span>Subtotal</span><span>₹{{ order.subtotal }}</span></div>
+                        <div class="summary-row"><span>Shipping</span><span class="shipping-cost">₹{{ order.shipping_cost }}</span></div>
+                        {% if order.discount > 0 %}
+                        <div class="summary-row discount"><span>Discount</span><span>- ₹{{ order.discount }}</span></div>
+                        {% endif %}
+                        <div class="summary-divider"></div>
+                        <div class="summary-row grand-total"><span>Total</span><span>₹{{ order.total }}</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            
+            <!-- ===== SHIPPING ===== -->
+            <div class="glass-card sidebar-card animate-right" style="animation-delay: 0.1s;">
+                <div class="sidebar-header"><i class="fas fa-map-marker-alt"></i> Shipping Details</div>
+                <div class="sidebar-body">
+                    <div class="shipping-address">
+                        <i class="fas fa-home"></i>
+                        <p>{{ order.shipping_address }}</p>
+                    </div>
+                    <div class="shipping-detail-grid">
+                        <div class="shipping-detail-item">
+                            <span class="detail-label">City</span>
+                            <span class="detail-value">{{ order.shipping_city }}</span>
+                        </div>
+                        <div class="shipping-detail-item">
+                            <span class="detail-label">Postal Code</span>
+                            <span class="detail-value">{{ order.shipping_postal_code }}</span>
+                        </div>
+                        <div class="shipping-detail-item full-width">
+                            <span class="detail-label">Phone</span>
+                            <span class="detail-value"><i class="fas fa-phone"></i> {{ order.shipping_phone }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ===== PAYMENT ===== -->
+            {% if order.payment_status == 'pending' %}
+            <div class="glass-card sidebar-card payment-card animate-right" style="animation-delay: 0.2s;">
+                <div class="sidebar-header payment-header">
+                    <i class="fas fa-exclamation-triangle"></i> Payment Required
+                    <span class="payment-required-badge">Pending</span>
+                </div>
+                <div class="sidebar-body">
+                    <div class="payment-method-display">
+                        <div class="payment-method-icon">
+                            {% if order.payment_method.name == 'phonepe' %}
+                            <img src="{% static 'images/payment/phonepe-logo.png' %}" alt="PhonePe">
+                            {% elif order.payment_method.name == 'paytm' %}
+                            <img src="{% static 'images/payment/paytm-logo.png' %}" alt="Paytm">
+                            {% elif order.payment_method.name == 'googlepay' %}
+                            <img src="{% static 'images/payment/gpay-logo.png' %}" alt="Google Pay">
+                            {% else %}
+                            <img src="{% static 'images/payment/upi-logo.png' %}" alt="UPI">
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="payment-method-name">{{ order.payment_method_name|default:order.payment_method.name|default:'UPI' }}</div>
+                            <div class="payment-method-sub">Secure UPI payment</div>
+                        </div>
+                    </div>
+                    
+                    <div class="amount-info">
+                        <span class="amount-label">Amount</span>
+                        <span class="amount-value">₹{{ order.total }}</span>
+                    </div>
+                    
+                    <button class="btn-pay-now w-100" onclick="openPaymentApp()">
+                        <i class="fas fa-credit-card"></i> Pay Now
+                    </button>
+                    
+                    <div class="payment-security">
+                        <span><i class="fas fa-lock"></i> 256-bit</span>
+                        <span><i class="fas fa-shield-alt"></i> Secure</span>
+                        <span><i class="fas fa-undo"></i> 30 days</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- ===== TRUST ===== -->
+            <div class="glass-card sidebar-card trust-card animate-right" style="animation-delay: 0.3s;">
+                <div class="sidebar-header trust-header"><i class="fas fa-shield-alt"></i> Secure Order</div>
+                <div class="sidebar-body">
+                    <div class="trust-grid">
+                        <div class="trust-item">
+                            <div class="trust-icon"><i class="fas fa-lock"></i></div>
+                            <div class="trust-text">
+                                <strong>256-bit Encryption</strong>
+                                <span>Your data is fully encrypted</span>
+                            </div>
+                        </div>
+                        <div class="trust-item">
+                            <div class="trust-icon"><i class="fas fa-credit-card"></i></div>
+                            <div class="trust-text">
+                                <strong>Secure UPI Payment</strong>
+                                <span>Protected payment gateway</span>
+                            </div>
+                        </div>
+                        <div class="trust-item">
+                            <div class="trust-icon"><i class="fas fa-undo-alt"></i></div>
+                            <div class="trust-text">
+                                <strong>Easy Return Policy</strong>
+                                <span>30 days hassle-free returns</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+JAVASCRIPT - DEEP LINK PAYMENT
+============================================================ -->
+<script>
+    // ============================================================
+    // TOAST
+    // ============================================================
+    function showToast(message, type = 'info') {
+        const existing = document.querySelector('.fk-toast-message');
+        if (existing) existing.remove();
+        
+        const toast = document.createElement('div');
+        toast.className = 'fk-toast-message';
+        if (type === 'success') toast.style.borderColor = 'rgba(74, 222, 128, 0.2)';
+        if (type === 'error') toast.style.borderColor = 'rgba(248, 113, 113, 0.2)';
+        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}" style="margin-right: 8px;"></i> ${message}`;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+    
+    // ============================================================
+    // OPEN PAYMENT APP - DEEP LINK
+    // ============================================================
+    function openPaymentApp() {
+        const receiver = "{{ order.payment_receiver_number }}";
+        const amount = "{{ order.total }}";
+        const orderNumber = "{{ order.order_number }}";
+        const methodName = "{{ order.payment_method_name|default:order.payment_method.name|default:'UPI' }}";
+        const methodType = "{{ order.payment_method.name|default:'upi' }}";
+        
+        if (!receiver || receiver === '') {
+            showToast('No receiver account found! Please contact support.', 'error');
+            return;
+        }
+        
+        // ✅ Deep Links for each app
+        const deepLinks = {
+            'phonepe': {
+                link: `phonepe://pay?pa=${receiver}&pn=Flipkart&am=${amount}&cu=INR&tn=Order_${orderNumber}`,
+                fallback: `https://phone.pe/pay?pa=${receiver}&pn=Flipkart&am=${amount}&cu=INR&tn=Order_${orderNumber}`
+            },
+            'paytm': {
+                link: `paytmmp://pay?pa=${receiver}&pn=Flipkart&am=${amount}&cu=INR&tn=Order_${orderNumber}`,
+                fallback: `https://paytm.com/pay?pa=${receiver}&pn=Flipkart&am=${amount}&cu=INR&tn=Order_${orderNumber}`
+            },
+            'googlepay': {
+                link: `gpay://upi/pay?pa=${receiver}&pn=Flipkart&am=${amount}&cu=INR&tn=Order_${orderNumber}`,
+                fallback: `https://pay.google.com/pay?pa=${receiver}&pn=Flipkart&am=${amount}&cu=INR&tn=Order_${orderNumber}`
+            },
+            'upi': {
+                link: `upi://pay?pa=${receiver}&pn=Flipkart&am=${amount}&cu=INR&tn=Order_${orderNumber}`,
+                fallback: `https://upipay.com/pay?pa=${receiver}&pn=Flipkart&am=${amount}&cu=INR&tn=Order_${orderNumber}`
+            }
+        };
+        
+        const selected = deepLinks[methodType] || deepLinks['upi'];
+        
+        showToast(`Opening ${methodName} app...`, 'info');
+        
+        // ✅ Try deep link first
+        const appOpened = window.open(selected.link, '_blank');
+        
+        // ✅ If deep link fails, try fallback after 2 seconds
+        setTimeout(() => {
+            if (appOpened) {
+                showToast(`Please complete payment in ${methodName}`, 'info');
+            } else {
+                window.open(selected.fallback, '_blank');
+                showToast(`Opening ${methodName} web...`, 'info');
+            }
+        }, 1000);
+        
+        // ✅ After 10 seconds, try to mark as paid
+        setTimeout(() => {
+            fetch("{% url 'orders:mark_as_paid' order.id %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Payment successful! 🎉', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(() => {
+                showToast('Please verify payment manually', 'info');
+            });
+        }, 10000);
+    }
+</script>
+{% endblock %}

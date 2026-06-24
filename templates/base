@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}Flipkart - Online Shopping in Bangladesh{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    
+    <style>
+        /* ============================================================
+           FLIPKART CLONE - ক্লিন ডিজাইন
+           ============================================================ */
+        
+        /* ---------- রুট ভেরিয়েবল ---------- */
+        :root {
+            --primary-blue: #2874f0;
+            --primary-orange: #fb641b;
+            --primary-yellow: #ffe11b;
+            --primary-green: #388e3c;
+            --white: #ffffff;
+            --light-gray: #f1f3f6;
+            --border-gray: #e0e0e0;
+            --text-dark: #212121;
+            --text-light: #878787;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.16);
+            --radius: 4px;
+            --radius-lg: 8px;
+            --transition: all 0.3s ease;
+        }
+        
+        /* ---------- গ্লোবাল ---------- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--light-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding-top: 56px;
+            padding-bottom: 60px;
+        }
+        
+        /* ডেস্কটপে ফুটার প্যাডিং কম */
+        @media (min-width: 992px) {
+            body { padding-bottom: 0; }
+        }
+        
+        /* স্ক্রলবার */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #1a5bc7; }
+        
+        /* ============================================================
+           হেডার - Desktop & Mobile
+           ============================================================ */
+        .fk-header {
+            background: var(--primary-blue);
+            padding: 8px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1050;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .fk-header .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        
+        /* লোগো */
+        .fk-logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+        
+        .fk-logo img {
+            height: 28px;
+            width: auto;
+        }
+        
+        .fk-logo-text {
+            color: var(--white);
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-left: 4px;
+        }
+        
+        .fk-logo-text span { color: var(--primary-yellow); }
+        
+        .fk-logo-sub {
+            font-size: 10px;
+            font-weight: 400;
+            color: var(--white);
+            opacity: 0.9;
+            display: block;
+            margin-top: -2px;
+        }
+        
+        .fk-logo-sub .plus-icon {
+            color: var(--primary-yellow);
+            font-weight: 700;
+        }
+        
+        /* সার্চ */
+        .fk-search {
+            flex: 1;
+            max-width: 560px;
+            min-width: 140px;
+            position: relative;
+        }
+        
+        .fk-search input {
+            width: 100%;
+            padding: 9px 44px 9px 14px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            background: var(--white);
+            color: var(--text-dark);
+            outline: none;
+            transition: var(--transition);
+        }
+        
+        .fk-search input:focus {
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
+        }
+        
+        .fk-search input::placeholder {
+            color: var(--text-light);
+            font-size: 13px;
+        }
+        
+        .fk-search .search-btn {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 44px;
+            border: none;
+            background: transparent;
+            color: var(--primary-blue);
+            font-size: 17px;
+            cursor: pointer;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            transition: var(--transition);
+        }
+        
+        .fk-search .search-btn:hover {
+            background: rgba(0,0,0,0.04);
+        }
+        
+        /* হেডার রাইট */
+        .fk-header-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        
+        .fk-header-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--white);
+            background: transparent;
+        }
+        
+        .fk-header-btn:hover {
+            background: rgba(255,255,255,0.12);
+            color: var(--white);
+        }
+        
+        .fk-header-btn.login-btn {
+            background: var(--white);
+            color: var(--primary-blue);
+            padding: 6px 20px;
+            font-weight: 600;
+        }
+        
+        .fk-header-btn.login-btn:hover {
+            background: #f5f5f5;
+            color: var(--primary-blue);
+        }
+        
+        .fk-header-btn .badge-icon {
+            background: var(--primary-orange);
+            color: var(--white);
+            font-size: 9px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 50%;
+            margin-left: 3px;
+            min-width: 17px;
+            text-align: center;
+        }
+        
+        .fk-header-btn .cart-icon {
+            font-size: 19px;
+            position: relative;
+        }
+        
+        .fk-header-btn .cart-badge {
+            position: absolute;
+            top: -6px;
+            right: -10px;
+            background: var(--primary-orange);
+            color: var(--white);
+            font-size: 9px;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 50%;
+            min-width: 16px;
+            text-align: center;
+        }
+        
+        /* ড্রপডাউন */
+        .fk-dropdown .dropdown-menu {
+            border: none;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 6px 0;
+            min-width: 170px;
+            margin-top: 8px;
+        }
+        
+        .fk-dropdown .dropdown-item {
+            padding: 8px 18px;
+            font-size: 13px;
+            color: var(--text-dark);
+            transition: var(--transition);
+        }
+        
+        .fk-dropdown .dropdown-item:hover {
+            background: var(--light-gray);
+            color: var(--primary-blue);
+        }
+        
+        .fk-dropdown .dropdown-item i {
+            width: 18px;
+            margin-right: 10px;
+            color: var(--text-light);
+        }
+        
+        .fk-dropdown .dropdown-divider {
+            margin: 4px 0;
+            border-color: var(--border-gray);
+        }
+        
+        /* মোবাইলে হাইড */
+        .desktop-only {
+            display: inline;
+        }
+        
+        @media (max-width: 991.98px) {
+            .desktop-only { display: none !important; }
+            .fk-logo-text { font-size: 15px; }
+            .fk-logo img { height: 22px; }
+            .fk-search { max-width: 100%; min-width: 100px; }
+            .fk-header .container { padding: 0 10px; }
+            .fk-header-btn { padding: 4px 8px; font-size: 12px; }
+            .fk-header-btn.login-btn { padding: 4px 14px; }
+        }
+        
+        @media (max-width: 575.98px) {
+            .fk-search input { font-size: 12px; padding: 7px 38px 7px 10px; }
+            .fk-search .search-btn { width: 38px; font-size: 15px; }
+            .fk-logo-text { font-size: 13px; }
+            .fk-logo img { height: 18px; }
+            .fk-header-btn { padding: 3px 6px; font-size: 11px; }
+            .fk-header-btn.login-btn { padding: 3px 10px; }
+        }
+        
+        /* ============================================================
+           ক্যাটাগরি বার (Desktop)
+           ============================================================ */
+        .fk-category-bar {
+            background: var(--white);
+            border-bottom: 1px solid var(--border-gray);
+            padding: 6px 0;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            z-index: 1040;
+            box-shadow: var(--shadow-sm);
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .fk-category-bar::-webkit-scrollbar { display: none; }
+        .fk-category-bar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .fk-category-bar .category-item {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-dark);
+            font-size: 10px;
+            font-weight: 500;
+            padding: 2px 14px;
+            transition: var(--transition);
+        }
+        
+        .fk-category-bar .category-item:hover {
+            color: var(--primary-blue);
+            transform: translateY(-1px);
+        }
+        
+        .fk-category-bar .category-item i {
+            font-size: 20px;
+            margin-bottom: 1px;
+            color: var(--primary-blue);
+        }
+        
+        .fk-category-bar .category-item .cat-name {
+            font-size: 9px;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 991.98px) {
+            .fk-category-bar { display: none !important; }
+        }
+        
+        /* ============================================================
+           মোবাইল নেভবার (Bottom Navigation)
+           ============================================================ */
+        .fk-mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            border-top: 1px solid var(--border-gray);
+            z-index: 1050;
+            padding: 4px 0 8px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
+            display: none;
+        }
+        
+        @media (max-width: 991.98px) {
+            .fk-mobile-nav { display: block !important; }
+        }
+        
+        .fk-mobile-nav .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-light);
+            font-size: 9px;
+            font-weight: 500;
+            padding: 2px 0;
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .fk-mobile-nav .nav-item.active {
+            color: var(--primary-blue);
+        }
+        
+        .fk-mobile-nav .nav-item i {
+            font-size: 20px;
+            margin-bottom: 1px;
+        }
+        
+        .fk-mobile-nav .nav-item .nav-badge {
+            position: absolute;
+            top: -2px;
+            right: 50%;
+            transform: translateX(calc(50% + 14px));
+            background: var(--primary-orange);
+            color: var(--white);
+            font-size: 8px;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 50%;
+            min-width: 15px;
+            text-align: center;
+        }
+        
+        /* ============================================================
+           মেইন কন্টেন্ট
+           ============================================================ */
+        .fk-main {
+            margin-top: 40px;
+            padding: 12px 0 20px;
+            min-height: calc(100vh - 96px);
+        }
+        
+        @media (max-width: 991.98px) {
+            .fk-main {
+                margin-top: 0;
+                padding: 8px 0 100px;
+                min-height: calc(100vh - 116px);
+            }
+        }
+        
+        /* ============================================================
+           ফ্লিপকার্ট কার্ড
+           ============================================================ */
+        .fk-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            padding: 14px;
+            margin-bottom: 14px;
+            border: none;
+            transition: var(--transition);
+        }
+        
+        .fk-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        
+        .fk-card-header {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-dark);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-gray);
+            margin-bottom: 10px;
+        }
+        
+        /* ============================================================
+           বাটন
+           ============================================================ */
+        .fk-btn-primary {
+            background: var(--primary-blue);
+            color: var(--white);
+            border: none;
+            padding: 8px 20px;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 13px;
+            transition: var(--transition);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .fk-btn-primary:hover {
+            background: #1a5bc7;
+            color: var(--white);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .fk-btn-orange {
+            background: var(--primary-orange);
+            color: var(--white);
+            border: none;
+            padding: 8px 20px;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 13px;
+            transition: var(--transition);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .fk-btn-orange:hover {
+            background: #e85a0e;
+            color: var(--white);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .fk-btn-outline {
+            background: transparent;
+            color: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+            padding: 7px 19px;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 13px;
+            transition: var(--transition);
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .fk-btn-outline:hover {
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+        
+        /* ============================================================
+           প্রোডাক্ট কার্ড
+           ============================================================ */
+        .fk-product-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            transition: var(--transition);
+            height: 100%;
+            border: 1px solid transparent;
+        }
+        
+        .fk-product-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-3px);
+            border-color: var(--border-gray);
+        }
+        
+        .fk-product-card .product-image {
+            height: 170px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--light-gray);
+            padding: 12px;
+            position: relative;
+        }
+        
+        .fk-product-card .product-image img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        
+        .fk-product-card .product-body {
+            padding: 10px 14px 14px;
+        }
+        
+        .fk-product-card .product-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 3px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 36px;
+        }
+        
+        .fk-product-card .product-price {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        
+        .fk-product-card .product-price .original {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-light);
+            text-decoration: line-through;
+            margin-left: 6px;
+        }
+        
+        .fk-product-card .product-price .discount {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary-green);
+            margin-left: 6px;
+        }
+        
+        .fk-product-card .product-footer {
+            padding: 6px 14px 14px;
+            border-top: 1px solid var(--border-gray);
+            display: flex;
+            gap: 6px;
+        }
+        
+        .fk-product-card .product-footer .btn {
+            flex: 1;
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+        
+        .fk-discount-tag {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: var(--primary-orange);
+            color: var(--white);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 3px;
+        }
+        
+        @media (max-width: 575.98px) {
+            .fk-product-card .product-image { height: 130px; }
+            .fk-product-card .product-title { font-size: 12px; height: 32px; }
+            .fk-product-card .product-price { font-size: 15px; }
+        }
+        
+        /* ============================================================
+           ফুটার (Desktop Only)
+           ============================================================ */
+        .fk-footer {
+            background: #172337;
+            color: var(--white);
+            padding: 32px 0 16px;
+            margin-top: 24px;
+        }
+        
+        @media (max-width: 991.98px) {
+            .fk-footer { display: none !important; }
+        }
+        
+        .fk-footer a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 12px;
+            transition: var(--transition);
+            padding: 2px 0;
+        }
+        
+        .fk-footer a:hover {
+            color: var(--white);
+        }
+        
+        .fk-footer h6 {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+        
+        .fk-footer .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding-top: 14px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        /* ============================================================
+           টোস্ট
+           ============================================================ */
+        .fk-toast {
+            position: fixed;
+            top: 76px;
+            right: 16px;
+            z-index: 9999;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 14px 18px;
+            max-width: 340px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-left: 4px solid var(--primary-blue);
+        }
+        
+        .fk-toast.show { transform: translateX(0); }
+        .fk-toast.success { border-left-color: var(--primary-green); }
+        .fk-toast.error { border-left-color: #dc3545; }
+        
+        .fk-toast .toast-icon { font-size: 22px; }
+        .fk-toast .toast-msg { font-size: 13px; font-weight: 500; color: var(--text-dark); flex: 1; }
+        .fk-toast .toast-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 0 4px;
+        }
+        
+        @media (max-width: 575.98px) {
+            .fk-toast { top: 66px; right: 10px; max-width: 280px; padding: 10px 14px; }
+            .fk-toast .toast-icon { font-size: 18px; }
+            .fk-toast .toast-msg { font-size: 12px; }
+        }
+        
+        /* ============================================================
+           ইউটিলিটি
+           ============================================================ */
+        .text-blue { color: var(--primary-blue); }
+        .text-orange { color: var(--primary-orange); }
+        .bg-blue { background: var(--primary-blue); }
+        .bg-orange { background: var(--primary-orange); }
+        .bg-light-gray { background: var(--light-gray); }
+        .fk-shadow { box-shadow: var(--shadow-sm); }
+        .fk-shadow-hover:hover { box-shadow: var(--shadow-md); }
+        .fk-radius { border-radius: var(--radius-lg); }
+        .gap-2 { gap: 8px; }
+        .gap-3 { gap: 12px; }
+        .fw-500 { font-weight: 500; }
+        .fw-600 { font-weight: 600; }
+        .fw-700 { font-weight: 700; }
+        
+        /* লোডার */
+        .fk-loader {
+            display: inline-block;
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--border-gray);
+            border-top: 3px solid var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+    হেডার
+    ============================================================ -->
+    <header class="fk-header">
+        <div class="container">
+            <!-- লোগো -->
+            <a href="{% url 'home:home' %}" class="fk-logo">
+                <img src="{% static 'images/flipkart-logo.png' %}" alt="Flipkart" onerror="this.style.display='none'">
+                <div>
+                    <span class="fk-logo-text">Flipkart<span>.</span></span>
+                    <span class="fk-logo-sub">
+                        <span class="plus-icon">+</span> Explore <span class="plus-icon">Plus</span>
+                    </span>
+                </div>
+            </a>
+            
+            <!-- সার্চ -->
+            <div class="fk-search">
+                <form method="GET" action="{% url 'products:product_list' %}">
+                    <input type="text" name="q" placeholder="Search for products, brands and more" value="{{ request.GET.q|default:'' }}">
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+            
+            <!-- হেডার রাইট -->
+            <div class="fk-header-right">
+                {% if user.is_authenticated %}
+                <div class="fk-dropdown">
+                    <button class="fk-header-btn" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i>
+                        <span class="desktop-only">{{ user.first_name|default:user.username }}</span>
+                        <i class="fas fa-chevron-down desktop-only" style="font-size: 9px; margin-left: 3px;"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'accounts:dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:profile_update' %}"><i class="fas fa-user-edit"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="{% url 'orders:order_history' %}"><i class="fas fa-history"></i> Orders</a></li>
+                        <li><a class="dropdown-item" href="{% url 'wishlist:wishlist_view' %}"><i class="fas fa-heart"></i> Wishlist</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{% url 'accounts:logout' %}" class="d-inline w-100">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="fk-header-btn login-btn">
+                    <i class="fas fa-user"></i> <span class="desktop-only">Login</span>
+                </a>
+                {% endif %}
+                
+                <a href="{% url 'wishlist:wishlist_view' %}" class="fk-header-btn desktop-only">
+                    <i class="fas fa-heart"></i>
+                    <span class="desktop-only">Wishlist</span>
+                    {% if user.is_authenticated and user.wishlist.item_count > 0 %}
+                    <span class="badge-icon">{{ user.wishlist.item_count }}</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{% url 'cart:cart_detail' %}" class="fk-header-btn">
+                    <span class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        {% if user.is_authenticated and user.cart.total_items > 0 %}
+                        <span class="cart-badge">{{ user.cart.total_items }}</span>
+                        {% endif %}
+                    </span>
+                    <span class="desktop-only">Cart</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============================================================
+    ক্যাটাগরি বার (Desktop Only)
+    ============================================================ -->
+    <nav class="fk-category-bar">
+        <div class="container">
+            <a href="{% url 'products:product_list' %}" class="category-item">
+                <i class="fas fa-mobile-alt"></i>
+                <span class="cat-name">Mobiles</span>
+            </a>
+            <a href="{% url 'products:product_list' %}" class="category-item">
+                <i class="fas fa-laptop"></i>
+                <span class="cat-name">Electronics</span>
+            </a>
+            <a href="{% url 'products:product_list' %}" class="category-item">
+                <i class="fas fa-tshirt"></i>
+                <span class="cat-name">Fashion</span>
+            </a>
+            <a href="{% url 'products:product_list' %}" class="category-item">
+                <i class="fas fa-home"></i>
+                <span class="cat-name">Home</span>
+            </a>
+            <a href="{% url 'products:product_list' %}" class="category-item">
+                <i class="fas fa-tv"></i>
+                <span class="cat-name">Appliances</span>
+            </a>
+            <a href="{% url 'products:product_list' %}" class="category-item">
+                <i class="fas fa-gamepad"></i>
+                <span class="cat-name">Gaming</span>
+            </a>
+            <a href="{% url 'products:product_list' %}" class="category-item">
+                <i class="fas fa-book"></i>
+                <span class="cat-name">Books</span>
+            </a>
+            <a href="{% url 'products:product_list' %}" class="category-item">
+                <i class="fas fa-gift"></i>
+                <span class="cat-name">Offers</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- ============================================================
+    মেসেজ
+    ============================================================ -->
+    <div class="container mt-2">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show fk-radius shadow-sm" role="alert">
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle text-success{% elif message.tags == 'error' %}exclamation-circle text-danger{% else %}info-circle text-primary{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- ============================================================
+    মেইন কন্টেন্ট
+    ============================================================ -->
+    <main class="fk-main">
+        <div class="container">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+
+    <!-- ============================================================
+    ফুটার (Desktop Only)
+    ============================================================ -->
+    <footer class="fk-footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-3 col-6">
+                    <h6>ABOUT</h6>
+                    <a href="#" class="d-block">Contact Us</a>
+                    <a href="#" class="d-block">About Us</a>
+                    <a href="#" class="d-block">Careers</a>
+                    <a href="#" class="d-block">Flipkart Stories</a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <h6>HELP</h6>
+                    <a href="#" class="d-block">Payments</a>
+                    <a href="#" class="d-block">Shipping</a>
+                    <a href="#" class="d-block">Cancellation & Returns</a>
+                    <a href="#" class="d-block">FAQ</a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <h6>POLICY</h6>
+                    <a href="#" class="d-block">Return Policy</a>
+                    <a href="#" class="d-block">Terms of Use</a>
+                    <a href="#" class="d-block">Security</a>
+                    <a href="#" class="d-block">Privacy</a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <h6>CONTACT</h6>
+                    <a href="#" class="d-block"><i class="fas fa-phone me-2"></i> +880 1XXX-XXXXXX</a>
+                    <a href="#" class="d-block"><i class="fas fa-envelope me-2"></i> support@flipkart.com</a>
+                    <a href="#" class="d-block"><i class="fas fa-map-marker-alt me-2"></i> Dhaka, Bangladesh</a>
+                    <div class="d-flex gap-2 mt-2">
+                        <a href="#" class="text-white-50"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white-50"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white-50"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-white-50"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="mb-0">&copy; 2024 Flipkart. All rights reserved. Made with ❤️ in Bangladesh</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============================================================
+    মোবাইল নেভবার (Bottom Navigation - Phone Only)
+    ============================================================ -->
+    <nav class="fk-mobile-nav">
+        <div class="container">
+            <div class="row g-0">
+                <div class="col">
+                    <a href="{% url 'home:home' %}" class="nav-item {% if request.path == '/' %}active{% endif %}">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{% url 'products:product_list' %}" class="nav-item {% if 'product' in request.path %}active{% endif %}">
+                        <i class="fas fa-th-large"></i>
+                        <span>Categories</span>
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{% url 'cart:cart_detail' %}" class="nav-item {% if 'cart' in request.path %}active{% endif %}">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Cart</span>
+                        {% if user.is_authenticated and user.cart.total_items > 0 %}
+                        <span class="nav-badge">{{ user.cart.total_items }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{% url 'wishlist:wishlist_view' %}" class="nav-item {% if 'wishlist' in request.path %}active{% endif %}">
+                        <i class="fas fa-heart"></i>
+                        <span>Wishlist</span>
+                        {% if user.is_authenticated and user.wishlist.item_count > 0 %}
+                        <span class="nav-badge">{{ user.wishlist.item_count }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+                <div class="col">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'accounts:dashboard' %}" class="nav-item {% if 'dashboard' in request.path %}active{% endif %}">
+                        <i class="fas fa-user"></i>
+                        <span>Account</span>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'accounts:login' %}" class="nav-item">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================================
+    টোস্ট কন্টেইনার
+    ============================================================ -->
+    <div id="fk-toast-container"></div>
+
+    <!-- ============================================================
+    SCRIPTS
+    ============================================================ -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {% load static %}
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <script>
+        // ============================================================
+        // টোস্ট ফাংশন
+        // ============================================================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('fk-toast-container');
+            const toast = document.createElement('div');
+            toast.className = `fk-toast ${type}`;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                info: 'fa-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <span class="toast-icon"><i class="fas ${icons[type] || icons.info}"></i></span>
+                <span class="toast-msg">${message}</span>
+                <button class="toast-close">&times;</button>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            toast.querySelector('.toast-close').addEventListener('click', function() {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            });
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 4500);
+        }
+
+        // ============================================================
+        // অ্যালার্ট অটো ডিসমিস
+        // ============================================================
+        setTimeout(function() {
+            document.querySelectorAll('.alert').forEach(function(alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                setTimeout(() => bsAlert.close(), 500);
+            });
+        }, 5000);
+
+        // ============================================================
+        // কার্ট কাউন্ট আপডেট
+        // ============================================================
+        function updateCartCount(count) {
+            document.querySelectorAll('.cart-badge, .nav-badge').forEach(el => {
+                if (el.closest('a[href*="cart"]') || el.closest('.cart-icon')) {
+                    if (count > 0) {
+                        el.textContent = count;
+                        el.style.display = 'inline-block';
+                    } else {
+                        el.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // ============================================================
+        // উইশলিস্ট কাউন্ট আপডেট
+        // ============================================================
+        function updateWishlistCount(count) {
+            document.querySelectorAll('.badge-icon, .nav-badge').forEach(el => {
+                if (el.closest('a[href*="wishlist"]')) {
+                    if (count > 0) {
+                        el.textContent = count;
+                        el.style.display = 'inline-block';
+                    } else {
+                        el.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        console.log('🚀 Flipkart Style Loaded!');
+        console.log('💡 Tip: showToast("Message", "success|error|info")');
+        console.log('💡 Tip: updateCartCount(5) - Update cart badge');
+        console.log('💡 Tip: updateWishlistCount(3) - Update wishlist badge');
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

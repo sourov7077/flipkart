@@ -1,0 +1,837 @@
+/* ============================================================
+   FLIPKART STYLE - সম্পূর্ণ CSS
+   ============================================================ */
+
+/* ---------- রুট ভেরিয়েবল ---------- */
+:root {
+    --primary-blue: #2874f0;
+    --primary-orange: #fb641b;
+    --primary-yellow: #ffe11b;
+    --primary-green: #388e3c;
+    --white: #ffffff;
+    --light-gray: #f1f3f6;
+    --border-gray: #e0e0e0;
+    --text-dark: #212121;
+    --text-light: #878787;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.16);
+    --radius: 4px;
+    --radius-lg: 8px;
+    --transition: all 0.3s ease;
+}
+
+/* ---------- গ্লোবাল রিসেট ---------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--light-gray);
+    color: var(--text-dark);
+    min-height: 100vh;
+    padding-top: 56px;
+    padding-bottom: 56px;
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: var(--primary-blue);
+    transition: var(--transition);
+}
+
+a:hover {
+    color: #1a5bc7;
+}
+
+img {
+    max-width: 100%;
+}
+
+/* ---------- স্ক্রলবার ---------- */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-blue);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #1a5bc7;
+}
+
+/* ============================================================
+   ফ্লিপকার্ট হেডার
+   ============================================================ */
+.fk-header {
+    background: var(--primary-blue);
+    padding: 8px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.fk-header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+/* লোগো */
+.fk-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.fk-logo img {
+    height: 32px;
+    width: auto;
+}
+
+.fk-logo-text {
+    color: var(--white);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-left: 4px;
+}
+
+.fk-logo-text span {
+    color: var(--primary-yellow);
+    font-style: italic;
+}
+
+.fk-logo-sub {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--white);
+    opacity: 0.9;
+    display: block;
+    margin-top: -2px;
+}
+
+.fk-logo-sub .plus-icon {
+    color: var(--primary-yellow);
+    font-weight: 700;
+}
+
+/* সার্চ বার */
+.fk-search {
+    flex: 1;
+    max-width: 560px;
+    min-width: 200px;
+    position: relative;
+}
+
+.fk-search input {
+    width: 100%;
+    padding: 10px 44px 10px 16px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    background: var(--white);
+    color: var(--text-dark);
+    outline: none;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.1);
+    transition: var(--transition);
+}
+
+.fk-search input:focus {
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
+}
+
+.fk-search input::placeholder {
+    color: var(--text-light);
+    font-size: 13px;
+}
+
+.fk-search .search-btn {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 44px;
+    border: none;
+    background: transparent;
+    color: var(--primary-blue);
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    transition: var(--transition);
+}
+
+.fk-search .search-btn:hover {
+    background: rgba(0,0,0,0.04);
+}
+
+/* হেডার রাইট সেকশন */
+.fk-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.fk-header-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--white);
+    background: transparent;
+}
+
+.fk-header-btn:hover {
+    background: rgba(255,255,255,0.12);
+    color: var(--white);
+}
+
+.fk-header-btn.login-btn {
+    background: var(--white);
+    color: var(--primary-blue);
+    padding: 8px 24px;
+    font-weight: 600;
+}
+
+.fk-header-btn.login-btn:hover {
+    background: #f5f5f5;
+    color: var(--primary-blue);
+}
+
+.fk-header-btn .badge-icon {
+    background: var(--primary-orange);
+    color: var(--white);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 50%;
+    margin-left: 4px;
+    min-width: 18px;
+    text-align: center;
+}
+
+.fk-header-btn .cart-icon {
+    font-size: 20px;
+    position: relative;
+}
+
+.fk-header-btn .cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    background: var(--primary-orange);
+    color: var(--white);
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 50%;
+    min-width: 16px;
+    text-align: center;
+}
+
+/* ড্রপডাউন */
+.fk-dropdown {
+    position: relative;
+}
+
+.fk-dropdown .dropdown-menu {
+    border: none;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 8px 0;
+    min-width: 180px;
+    margin-top: 8px;
+}
+
+.fk-dropdown .dropdown-item {
+    padding: 10px 20px;
+    font-size: 14px;
+    color: var(--text-dark);
+    transition: var(--transition);
+}
+
+.fk-dropdown .dropdown-item:hover {
+    background: var(--light-gray);
+    color: var(--primary-blue);
+}
+
+.fk-dropdown .dropdown-item i {
+    width: 20px;
+    margin-right: 10px;
+    color: var(--text-light);
+}
+
+.fk-dropdown .dropdown-divider {
+    margin: 4px 0;
+    border-color: var(--border-gray);
+}
+
+/* ============================================================
+   ফ্লিপকার্ট ক্যাটাগরি বার
+   ============================================================ */
+.fk-category-bar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border-gray);
+    padding: 8px 0;
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    box-shadow: var(--shadow-sm);
+}
+
+.fk-category-bar .category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-dark);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 12px;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.fk-category-bar .category-item:hover {
+    color: var(--primary-blue);
+}
+
+.fk-category-bar .category-item i {
+    font-size: 22px;
+    margin-bottom: 2px;
+    color: var(--primary-blue);
+}
+
+.fk-category-bar .category-item .cat-name {
+    font-size: 10px;
+    opacity: 0.8;
+}
+
+/* ============================================================
+   ফ্লিপকার্ট কার্ড
+   ============================================================ */
+.fk-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 16px;
+    margin-bottom: 16px;
+    border: none;
+    transition: var(--transition);
+}
+
+.fk-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.fk-card-header {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-gray);
+    margin-bottom: 12px;
+}
+
+/* ============================================================
+   ফ্লিপকার্ট বাটন
+   ============================================================ */
+.fk-btn-primary {
+    background: var(--primary-blue);
+    color: var(--white);
+    border: none;
+    padding: 10px 24px;
+    border-radius: var(--radius);
+    font-weight: 500;
+    font-size: 14px;
+    transition: var(--transition);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fk-btn-primary:hover {
+    background: #1a5bc7;
+    color: var(--white);
+    box-shadow: var(--shadow-md);
+}
+
+.fk-btn-orange {
+    background: var(--primary-orange);
+    color: var(--white);
+    border: none;
+    padding: 10px 24px;
+    border-radius: var(--radius);
+    font-weight: 500;
+    font-size: 14px;
+    transition: var(--transition);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fk-btn-orange:hover {
+    background: #e85a0e;
+    color: var(--white);
+    box-shadow: var(--shadow-md);
+}
+
+.fk-btn-outline {
+    background: transparent;
+    color: var(--primary-blue);
+    border: 1px solid var(--primary-blue);
+    padding: 9px 23px;
+    border-radius: var(--radius);
+    font-weight: 500;
+    font-size: 14px;
+    transition: var(--transition);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.fk-btn-outline:hover {
+    background: var(--primary-blue);
+    color: var(--white);
+}
+
+/* ============================================================
+   ফ্লিপকার্ট প্রোডাক্ট কার্ড
+   ============================================================ */
+.fk-product-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: var(--transition);
+    height: 100%;
+    border: 1px solid transparent;
+    position: relative;
+}
+
+.fk-product-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+    border-color: var(--border-gray);
+}
+
+.fk-product-card .product-image {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--light-gray);
+    padding: 16px;
+    position: relative;
+}
+
+.fk-product-card .product-image img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.fk-product-card .product-body {
+    padding: 12px 16px 16px;
+}
+
+.fk-product-card .product-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 40px;
+}
+
+.fk-product-card .product-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.fk-product-card .product-price .original {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-light);
+    text-decoration: line-through;
+    margin-left: 8px;
+}
+
+.fk-product-card .product-price .discount {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-green);
+    margin-left: 8px;
+}
+
+.fk-product-card .product-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--text-light);
+    margin-top: 4px;
+}
+
+.fk-product-card .product-rating .stars {
+    color: #ffa41c;
+}
+
+.fk-product-card .product-rating .rating-badge {
+    background: var(--primary-green);
+    color: var(--white);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.fk-product-card .product-footer {
+    padding: 8px 16px 16px;
+    border-top: 1px solid var(--border-gray);
+    display: flex;
+    gap: 8px;
+}
+
+.fk-product-card .product-footer .btn {
+    flex: 1;
+    font-size: 13px;
+    padding: 6px 12px;
+}
+
+/* ডিসকাউন্ট ট্যাগ */
+.fk-discount-tag {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: var(--primary-orange);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 3px;
+}
+
+/* ============================================================
+   ফ্লিপকার্ট ফুটার
+   ============================================================ */
+.fk-footer {
+    background: #172337;
+    color: var(--white);
+    padding: 40px 0 20px;
+    margin-top: 32px;
+}
+
+.fk-footer a {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 13px;
+    transition: var(--transition);
+}
+
+.fk-footer a:hover {
+    color: var(--white);
+}
+
+.fk-footer h6 {
+    color: var(--white);
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 12px;
+    opacity: 0.8;
+}
+
+.fk-footer .footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 16px;
+    margin-top: 24px;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+}
+
+/* ============================================================
+   ফ্লিপকার্ট টোস্ট
+   ============================================================ */
+.fk-toast {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 9999;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 16px 20px;
+    max-width: 380px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: translateX(120%);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-left: 4px solid var(--primary-blue);
+}
+
+.fk-toast.show {
+    transform: translateX(0);
+}
+
+.fk-toast.success {
+    border-left-color: var(--primary-green);
+}
+
+.fk-toast.error {
+    border-left-color: #dc3545;
+}
+
+.fk-toast .toast-icon {
+    font-size: 24px;
+}
+
+.fk-toast .toast-msg {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+    flex: 1;
+}
+
+.fk-toast .toast-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+/* ============================================================
+   ফ্লিপকার্ট মোবাইল নেভ
+   ============================================================ */
+.fk-mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--white);
+    border-top: 1px solid var(--border-gray);
+    z-index: 1000;
+    padding: 4px 0;
+    display: none;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
+}
+
+.fk-mobile-nav .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-light);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 4px 0;
+    transition: var(--transition);
+    position: relative;
+}
+
+.fk-mobile-nav .nav-item.active {
+    color: var(--primary-blue);
+}
+
+.fk-mobile-nav .nav-item i {
+    font-size: 22px;
+    margin-bottom: 2px;
+}
+
+.fk-mobile-nav .nav-item .nav-badge {
+    position: absolute;
+    top: 0;
+    right: 50%;
+    transform: translateX(calc(50% + 12px));
+    background: var(--primary-orange);
+    color: var(--white);
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 50%;
+    min-width: 16px;
+    text-align: center;
+}
+
+/* ============================================================
+   রেসপন্সিভ
+   ============================================================ */
+@media (min-width: 992px) {
+    .fk-mobile-nav { display: none !important; }
+    body { padding-bottom: 0; }
+}
+
+@media (max-width: 991.98px) {
+    .fk-mobile-nav { display: flex !important; }
+    .fk-category-bar { display: none !important; }
+    body { padding-top: 56px; padding-bottom: 60px; }
+    .fk-main { margin-top: 0; padding-bottom: 80px; }
+    .fk-header .container { padding: 0 12px; }
+    .fk-header-right .desktop-only { display: none !important; }
+    .fk-logo-text { font-size: 16px; }
+    .fk-logo img { height: 24px; }
+    .fk-search { max-width: 100%; }
+}
+
+@media (max-width: 575.98px) {
+    .fk-search input { font-size: 13px; padding: 8px 40px 8px 12px; }
+    .fk-header-btn { padding: 6px 10px; font-size: 12px; }
+    .fk-header-btn.login-btn { padding: 6px 16px; }
+    .fk-product-card .product-image { height: 160px; }
+    .fk-product-card .product-title { font-size: 13px; height: 36px; }
+    .fk-product-card .product-price { font-size: 16px; }
+}
+
+/* ============================================================
+   ইউটিলিটি
+   ============================================================ */
+.text-blue { color: var(--primary-blue); }
+.text-orange { color: var(--primary-orange); }
+.bg-blue { background: var(--primary-blue); }
+.bg-orange { background: var(--primary-orange); }
+.bg-light-gray { background: var(--light-gray); }
+.fk-shadow { box-shadow: var(--shadow-sm); }
+.fk-shadow-hover:hover { box-shadow: var(--shadow-md); }
+.fk-radius { border-radius: var(--radius-lg); }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+
+/* লোডার */
+.fk-loader {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-gray);
+    border-top: 3px solid var(--primary-blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* static/css/style.css - শেষে যোগ করুন */
+
+/* ============================================================
+   ✅ ব্যাজ পপ অ্যানিমেশন
+   ============================================================ */
+
+@keyframes badgePop {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.4); }
+    60% { transform: scale(0.8); }
+    100% { transform: scale(1); }
+}
+
+.cart-badge,
+.nav-badge,
+.badge-icon {
+    transition: all 0.3s ease;
+}
+
+.cart-badge.show,
+.nav-badge.show,
+.badge-icon.show {
+    display: inline-block !important;
+    animation: badgePop 0.4s ease;
+}
+
+/* কার্ট আইকনে ব্যাজ পজিশন - ডেস্কটপ */
+.fk-desktop-btn .cart-icon {
+    position: relative;
+    display: inline-block;
+}
+
+.fk-desktop-btn .cart-badge {
+    position: absolute;
+    top: -10px;
+    right: -14px;
+    background: #fb641b;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 50%;
+    min-width: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(251, 100, 27, 0.4);
+    border: 2px solid #fff;
+    line-height: 1.4;
+}
+
+/* মোবাইল নেভবারে ব্যাজ */
+.fk-mobile-nav .nav-item {
+    position: relative;
+}
+
+.fk-mobile-nav .nav-badge {
+    position: absolute;
+    top: -4px;
+    right: 50%;
+    transform: translateX(calc(50% + 16px));
+    background: #fb641b;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 50%;
+    min-width: 18px;
+    text-align: center;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(251, 100, 27, 0.3);
+}
+
+/* উইশলিস্ট ব্যাজ */
+.fk-desktop-btn .badge-icon {
+    background: #fb641b;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 50%;
+    min-width: 18px;
+    text-align: center;
+    margin-left: 4px;
+}

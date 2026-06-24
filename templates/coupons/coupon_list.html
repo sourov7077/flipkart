@@ -1,0 +1,454 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Coupons & Offers - Flipkart{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- ============================================================
+    কুপন লিস্ট
+    ============================================================ -->
+    <div class="col-lg-8">
+        <div class="fk-card">
+            <div class="fk-card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-tags text-blue me-2"></i> Available Coupons & Offers</span>
+                <span class="text-muted" style="font-size: 13px;">{{ coupons|length }} active coupons</span>
+            </div>
+            
+            {% if coupons %}
+            <div class="row g-3">
+                {% for coupon in coupons %}
+                <div class="col-md-6">
+                    <div class="coupon-card p-3 border position-relative" 
+                         style="border-color: var(--border-gray) !important; border-left: 4px solid var(--primary-orange) !important; transition: all 0.3s ease; background: var(--white);">
+                        
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                {% if coupon.discount_type == 'percentage' %}
+                                <h4 class="text-orange fw-800 mb-0" style="font-size: 24px;">
+                                    {{ coupon.discount_value }}% OFF
+                                </h4>
+                                {% else %}
+                                <h4 class="text-orange fw-800 mb-0" style="font-size: 24px;">
+                                    ৳{{ coupon.discount_value }} OFF
+                                </h4>
+                                {% endif %}
+                                <p class="text-muted mb-0" style="font-size: 13px;">
+                                    <i class="fas fa-shopping-bag me-1"></i>
+                                    Min Purchase: ৳{{ coupon.min_purchase }}
+                                </p>
+                            </div>
+                            <span class="badge bg-success rounded-0" style="font-size: 11px; padding: 4px 12px;">
+                                <i class="fas fa-check-circle me-1"></i> Active
+                            </span>
+                        </div>
+                        
+                        <div class="coupon-code-box mt-2 p-2 bg-light d-flex justify-content-between align-items-center" 
+                             style="border: 1px dashed var(--border-gray); background: var(--light-gray) !important;">
+                            <span class="fw-700" style="font-size: 18px; letter-spacing: 2px; color: var(--text-dark);">
+                                {{ coupon.code }}
+                            </span>
+                            <button class="btn fk-btn-outline btn-sm rounded-0 copy-coupon" 
+                                    data-code="{{ coupon.code }}"
+                                    style="font-size: 12px; white-space: nowrap;">
+                                <i class="far fa-copy me-1"></i> Copy
+                            </button>
+                        </div>
+                        
+                        <div class="mt-2 d-flex flex-wrap gap-3" style="font-size: 12px; color: var(--text-light);">
+                            <span>
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                Valid until {{ coupon.valid_to|date:"M d, Y" }}
+                            </span>
+                            <span>
+                                <i class="fas fa-users me-1"></i>
+                                Used {{ coupon.used_count }}/{{ coupon.usage_limit }} times
+                            </span>
+                            {% if coupon.max_discount %}
+                            <span>
+                                <i class="fas fa-tag me-1"></i>
+                                Max Discount: ৳{{ coupon.max_discount }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mt-2">
+                            <button class="btn fk-btn-primary btn-sm w-100 rounded-0 apply-coupon-btn" 
+                                    data-code="{{ coupon.code }}"
+                                    style="font-size: 13px; font-weight: 600;">
+                                <i class="fas fa-gift me-1"></i> Apply Coupon
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-tags" style="font-size: 64px; color: var(--text-light);"></i>
+                <h5 class="fw-700 mt-3" style="font-size: 18px;">No Active Coupons</h5>
+                <p class="text-muted" style="font-size: 14px;">Check back later for new offers and discounts!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- ============================================================
+    সাইডবার - অ্যাপ্লাই কুপন & টিপস
+    ============================================================ -->
+    <div class="col-lg-4">
+        <!-- অ্যাপ্লাই কুপন -->
+        <div class="fk-card">
+            <div class="fk-card-header">
+                <i class="fas fa-gift text-blue me-2"></i> Apply Coupon
+            </div>
+            
+            <form id="coupon-form">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-600" style="font-size: 13px;">Enter Coupon Code</label>
+                    <input type="text" class="form-control form-control-sm rounded-0" 
+                           id="coupon-code" placeholder="e.g. SAVE20"
+                           style="font-size: 14px; border-radius: 0 !important; border-color: var(--border-gray);">
+                </div>
+                <button type="submit" class="btn fk-btn-primary w-100 rounded-0" 
+                        id="apply-coupon-btn" style="font-size: 14px; font-weight: 600;">
+                    <i class="fas fa-check me-1"></i> Apply Coupon
+                </button>
+            </form>
+            
+            <div id="coupon-message" class="mt-2" style="font-size: 13px;"></div>
+            
+            {% if request.session.applied_coupon %}
+            <div class="mt-3 p-2 bg-light d-flex justify-content-between align-items-center" 
+                 style="border-left: 3px solid var(--primary-green);">
+                <div>
+                    <span class="fw-700" style="font-size: 14px;">{{ request.session.applied_coupon.code }}</span>
+                    <span class="text-success ms-2" style="font-size: 13px;">
+                        - ৳{{ request.session.applied_coupon.discount }}
+                    </span>
+                </div>
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-0" 
+                        id="remove-coupon" style="font-size: 12px; padding: 2px 10px;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- কুপন টিপস -->
+        <div class="fk-card mt-3">
+            <div class="fk-card-header">
+                <i class="fas fa-lightbulb text-warning me-2"></i> Coupon Tips
+            </div>
+            
+            <ul class="list-unstyled mb-0" style="font-size: 13px;">
+                <li class="mb-2 d-flex align-items-start">
+                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                    <span>Coupons are case-insensitive</span>
+                </li>
+                <li class="mb-2 d-flex align-items-start">
+                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                    <span>One coupon per order</span>
+                </li>
+                <li class="mb-2 d-flex align-items-start">
+                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                    <span>Cannot combine with other offers</span>
+                </li>
+                <li class="mb-2 d-flex align-items-start">
+                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                    <span>Valid only on minimum purchase</span>
+                </li>
+                <li class="d-flex align-items-start">
+                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                    <span>Coupons expire after usage limit</span>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- ফিচার্ড অফার -->
+        <div class="fk-card mt-3 bg-light">
+            <div class="fk-card-header">
+                <i class="fas fa-star text-warning me-2"></i> Featured Offers
+            </div>
+            
+            <div class="text-center py-2">
+                <p class="mb-1" style="font-size: 14px;">
+                    <i class="fas fa-tag text-orange me-2"></i>
+                    <span class="fw-700">Free Shipping</span>
+                </p>
+                <p class="text-muted mb-0" style="font-size: 13px;">
+                    On orders above ৳1000
+                </p>
+            </div>
+            <hr class="my-2" style="border-color: var(--border-gray);">
+            <div class="text-center py-2">
+                <p class="mb-1" style="font-size: 14px;">
+                    <i class="fas fa-percent text-orange me-2"></i>
+                    <span class="fw-700">10% Discount</span>
+                </p>
+                <p class="text-muted mb-0" style="font-size: 13px;">
+                    On first purchase with bKash
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+   স্টাইল ওভাররাইড (হুবহু ফ্লিপকার্ট থেকে)
+   ============================================================ -->
+<style>
+    .fk-card {
+        border-radius: 0 !important;
+        box-shadow: var(--shadow-sm);
+    }
+    .fk-card:hover {
+        box-shadow: var(--shadow-md);
+    }
+    .fk-card-header {
+        font-size: 15px;
+        font-weight: 600;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-gray);
+        margin-bottom: 12px;
+    }
+    .coupon-card {
+        border-color: var(--border-gray) !important;
+        border-left: 4px solid var(--primary-orange) !important;
+        transition: all 0.3s ease;
+        background: var(--white);
+        border-radius: 0 !important;
+    }
+    .coupon-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+    .coupon-code-box {
+        background: var(--light-gray) !important;
+        border: 1px dashed var(--border-gray) !important;
+        border-radius: 0 !important;
+    }
+    .text-orange {
+        color: var(--primary-orange) !important;
+    }
+    .form-control {
+        border-radius: 0 !important;
+        border-color: var(--border-gray);
+        transition: all 0.3s ease;
+    }
+    .form-control:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 2px rgba(40, 116, 240, 0.1);
+    }
+    .fk-btn-primary {
+        border-radius: 0 !important;
+    }
+    .fk-btn-outline {
+        border-radius: 0 !important;
+    }
+    .btn-outline-danger {
+        border-radius: 0 !important;
+    }
+    .bg-light {
+        background: var(--light-gray) !important;
+    }
+    .text-success {
+        color: #388e3c !important;
+    }
+    .text-warning {
+        color: #ffc107 !important;
+    }
+    .text-blue {
+        color: var(--primary-blue) !important;
+    }
+    .badge {
+        border-radius: 0 !important;
+    }
+    @media (max-width: 767.98px) {
+        .coupon-card h4 {
+            font-size: 20px !important;
+        }
+        .coupon-card .coupon-code-box {
+            font-size: 16px !important;
+        }
+        .fk-card-header {
+            font-size: 14px;
+        }
+        .btn {
+            font-size: 13px !important;
+            padding: 6px 12px !important;
+        }
+        .form-control {
+            font-size: 13px !important;
+        }
+    }
+    @media (max-width: 575.98px) {
+        .coupon-card {
+            padding: 12px !important;
+        }
+        .coupon-card h4 {
+            font-size: 18px !important;
+        }
+        .coupon-card .coupon-code-box {
+            font-size: 14px !important;
+            padding: 8px 12px !important;
+        }
+        .coupon-card .coupon-code-box .fw-700 {
+            font-size: 14px !important;
+        }
+        .coupon-card .d-flex {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 4px;
+        }
+        .fk-card-header {
+            font-size: 13px;
+            padding-bottom: 8px;
+        }
+        .btn {
+            font-size: 12px !important;
+            padding: 4px 10px !important;
+        }
+        .form-control {
+            font-size: 12px !important;
+            padding: 6px 10px !important;
+        }
+        .row.g-3 {
+            --bs-gutter-y: 0.5rem;
+        }
+        .row.g-3 > [class*="col-"] {
+            padding-right: 6px;
+            padding-left: 6px;
+        }
+        .mt-3 {
+            margin-top: 8px !important;
+        }
+    }
+</style>
+
+<!-- ============================================================
+   জাভাস্ক্রিপ্ট (হুবহু ফ্লিপকার্ট থেকে)
+   ============================================================ -->
+{% block extra_js %}
+<script>
+    document.querySelectorAll('.copy-coupon').forEach(button => {
+        button.addEventListener('click', function() {
+            const code = this.getAttribute('data-code');
+            const originalText = this.innerHTML;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                this.innerHTML = '<i class="fas fa-check me-1"></i> Copied!';
+                this.classList.remove('btn-outline-secondary');
+                this.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-outline-secondary');
+                }, 2000);
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                this.innerHTML = '<i class="fas fa-check me-1"></i> Copied!';
+                this.classList.remove('btn-outline-secondary');
+                this.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-outline-secondary');
+                }, 2000);
+            });
+        });
+    });
+    
+    document.getElementById('coupon-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const couponCode = document.getElementById('coupon-code').value.trim();
+        const messageEl = document.getElementById('coupon-message');
+        const applyBtn = document.getElementById('apply-coupon-btn');
+        
+        if (!couponCode) {
+            messageEl.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i> Please enter a coupon code</span>';
+            return;
+        }
+        
+        applyBtn.disabled = true;
+        applyBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Applying...';
+        messageEl.innerHTML = '';
+        
+        fetch('/coupons/apply/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `coupon_code=${encodeURIComponent(couponCode)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                messageEl.innerHTML = `<span class="text-success"><i class="fas fa-check-circle me-1"></i> ${data.message}</span>`;
+                showToast('✅ Coupon applied successfully!', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                messageEl.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i> ${data.message}</span>`;
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(() => {
+            messageEl.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i> Something went wrong</span>';
+            showToast('Something went wrong', 'error');
+        })
+        .finally(() => {
+            applyBtn.disabled = false;
+            applyBtn.innerHTML = '<i class="fas fa-check me-1"></i> Apply Coupon';
+        });
+    });
+    
+    document.querySelectorAll('.apply-coupon-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const code = this.getAttribute('data-code');
+            document.getElementById('coupon-code').value = code;
+            document.getElementById('coupon-form').dispatchEvent(new Event('submit'));
+        });
+    });
+    
+    document.getElementById('remove-coupon')?.addEventListener('click', function() {
+        fetch('/coupons/remove/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Coupon removed successfully', 'success');
+                setTimeout(() => location.reload(), 500);
+            }
+        })
+        .catch(() => {
+            showToast('Something went wrong', 'error');
+        });
+    });
+    
+    document.querySelectorAll('.form-control').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.style.borderColor = 'var(--primary-blue)';
+        });
+        input.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                this.style.borderColor = 'var(--border-gray)';
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

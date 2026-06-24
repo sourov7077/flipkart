@@ -1,0 +1,546 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shipping Address - Flipkart{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- ============================================================
+    সাইডবার (হুবহু ফ্লিপকার্টের account.html থেকে)
+    ============================================================ -->
+    <div class="col-lg-3">
+        <div class="fk-card">
+            <div class="text-center py-3 border-bottom" style="border-color: var(--border-gray);">
+                {% if user.profile.has_profile_picture %}
+                <img src="{{ user.profile.get_profile_picture_url }}" 
+                     alt="{{ user.username }}" 
+                     class="rounded-circle mb-2"
+                     style="width: 80px; height: 80px; object-fit: cover; border: 2px solid var(--primary-blue);">
+                {% else %}
+                <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-2" 
+                     style="width: 80px; height: 80px; border: 2px solid var(--primary-blue);">
+                    <i class="fas fa-user fa-3x text-secondary"></i>
+                </div>
+                {% endif %}
+                <h6 class="fw-700 mb-0" style="font-size: 16px;">{{ user.get_full_name|default:user.username }}</h6>
+                <p class="text-muted mb-0" style="font-size: 13px;">{{ user.email }}</p>
+            </div>
+            
+            <div class="list-group list-group-flush">
+                <a href="{% url 'accounts:dashboard' %}" class="list-group-item list-group-item-action" 
+                   style="border: none; border-radius: 0; padding: 12px 16px; font-size: 14px; color: var(--text-dark);">
+                    <i class="fas fa-tachometer-alt me-3" style="width: 20px;"></i> Dashboard
+                </a>
+                <a href="{% url 'accounts:profile_update' %}" class="list-group-item list-group-item-action" 
+                   style="border: none; border-radius: 0; padding: 12px 16px; font-size: 14px; color: var(--text-dark);">
+                    <i class="fas fa-user-edit me-3" style="width: 20px;"></i> Profile
+                </a>
+                <a href="{% url 'orders:order_history' %}" class="list-group-item list-group-item-action" 
+                   style="border: none; border-radius: 0; padding: 12px 16px; font-size: 14px; color: var(--text-dark);">
+                    <i class="fas fa-history me-3" style="width: 20px;"></i> Orders
+                </a>
+                <a href="{% url 'accounts:shipping_address' %}" class="list-group-item list-group-item-action active fw-600" 
+                   style="border: none; border-radius: 0; padding: 12px 16px; font-size: 14px; background: var(--light-gray); color: var(--primary-blue);">
+                    <i class="fas fa-map-marker-alt me-3" style="width: 20px;"></i> Addresses
+                </a>
+                <a href="{% url 'wishlist:wishlist_view' %}" class="list-group-item list-group-item-action" 
+                   style="border: none; border-radius: 0; padding: 12px 16px; font-size: 14px; color: var(--text-dark);">
+                    <i class="fas fa-heart me-3" style="width: 20px;"></i> Wishlist
+                </a>
+                <a href="{% url 'accounts:change_password' %}" class="list-group-item list-group-item-action" 
+                   style="border: none; border-radius: 0; padding: 12px 16px; font-size: 14px; color: var(--text-dark);">
+                    <i class="fas fa-key me-3" style="width: 20px;"></i> Change Password
+                </a>
+                <a href="#" class="list-group-item list-group-item-action text-danger logout-btn" 
+                   style="border: none; border-radius: 0; padding: 12px 16px; font-size: 14px; cursor: pointer;"
+                   onclick="showLogoutModal(event)">
+                    <i class="fas fa-sign-out-alt me-3" style="width: 20px;"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================================
+    মেইন কন্টেন্ট
+    ============================================================ -->
+    <div class="col-lg-9">
+        <!-- অ্যাড্রেস লিস্ট -->
+        <div class="fk-card">
+            <div class="fk-card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-map-marker-alt text-blue me-2"></i> Saved Addresses</span>
+                <span class="text-muted" style="font-size: 13px;">{{ addresses.count }} addresses</span>
+            </div>
+            
+            {% if addresses %}
+            <div class="row g-3">
+                {% for address in addresses %}
+                <div class="col-md-6">
+                    <div class="address-card p-3 border" style="border-color: var(--border-gray) !important; transition: all 0.3s ease; background: var(--white); border-radius: 8px !important;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="fw-700 mb-1" style="font-size: 15px;">
+                                    {{ address.full_name }}
+                                    {% if address.is_default %}
+                                    <span class="badge bg-success rounded-0 ms-2" style="font-size: 10px; padding: 2px 8px; border-radius: 4px !important;">
+                                        <i class="fas fa-check-circle me-1"></i> Default
+                                    </span>
+                                    {% endif %}
+                                </h6>
+                                <p class="mb-1" style="font-size: 14px; color: var(--text-dark);">
+                                    {{ address.address }}
+                                </p>
+                                <p class="mb-1" style="font-size: 14px; color: var(--text-dark);">
+                                    {{ address.city }}{% if address.postal_code %}, {{ address.postal_code }}{% endif %}
+                                </p>
+                                <p class="mb-0" style="font-size: 14px; color: var(--text-dark);">
+                                    <i class="fas fa-phone me-2" style="color: var(--text-light);"></i>
+                                    {{ address.phone }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 d-flex gap-2">
+                            <a href="{% url 'accounts:edit_shipping_address' address.id %}" 
+                               class="btn fk-btn-outline btn-sm rounded-0" style="font-size: 13px; border-radius: 6px !important;">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>
+                            <a href="{% url 'accounts:delete_shipping_address' address.id %}" 
+                               class="btn btn-outline-danger btn-sm rounded-0" style="font-size: 13px; border-radius: 6px !important;"
+                               onclick="return confirm('Are you sure you want to delete this address?')">
+                                <i class="fas fa-trash me-1"></i> Delete
+                            </a>
+                            {% if not address.is_default %}
+                            <a href="#" class="btn btn-outline-success btn-sm rounded-0" style="font-size: 13px; border-radius: 6px !important;"
+                               onclick="setDefaultAddress({{ address.id }})">
+                                <i class="fas fa-check me-1"></i> Set Default
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-map-marker-alt" style="font-size: 64px; color: var(--text-light);"></i>
+                <h5 class="fw-700 mt-3" style="font-size: 18px;">No Addresses Added</h5>
+                <p class="text-muted" style="font-size: 14px;">Add your shipping address for faster checkout</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- নতুন অ্যাড্রেস যোগ করুন -->
+        <div class="fk-card mt-3">
+            <div class="fk-card-header">
+                <i class="fas fa-plus-circle text-blue me-2"></i> Add New Address
+            </div>
+            
+            <form method="POST" id="address-form">
+                {% csrf_token %}
+                
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} rounded-0 py-2" style="font-size: 13px; border: none; border-radius: 8px !important;">
+                        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-600" style="font-size: 13px;">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" name="full_name" class="form-control form-control-sm rounded-0" 
+                               placeholder="Enter full name" required
+                               style="font-size: 14px; border-radius: 8px !important; border-color: var(--border-gray);">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-600" style="font-size: 13px;">Phone Number <span class="text-danger">*</span></label>
+                        <input type="tel" name="phone" class="form-control form-control-sm rounded-0" 
+                               placeholder="Enter phone number" required
+                               style="font-size: 14px; border-radius: 8px !important; border-color: var(--border-gray);">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-600" style="font-size: 13px;">Address <span class="text-danger">*</span></label>
+                        <textarea name="address" class="form-control form-control-sm rounded-0" 
+                                  rows="2" placeholder="House/Flat, Street, Area" required
+                                  style="font-size: 14px; border-radius: 8px !important; border-color: var(--border-gray);"></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-600" style="font-size: 13px;">City <span class="text-danger">*</span></label>
+                        <input type="text" name="city" class="form-control form-control-sm rounded-0" 
+                               placeholder="City" required
+                               style="font-size: 14px; border-radius: 8px !important; border-color: var(--border-gray);">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-600" style="font-size: 13px;">Postal Code</label>
+                        <input type="text" name="postal_code" class="form-control form-control-sm rounded-0" 
+                               placeholder="Postal/ZIP code"
+                               style="font-size: 14px; border-radius: 8px !important; border-color: var(--border-gray);">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-600" style="font-size: 13px;">Country <span class="text-danger">*</span></label>
+                        <select name="country" class="form-select form-select-sm rounded-0" required
+                                style="font-size: 14px; border-radius: 8px !important; border-color: var(--border-gray);">
+                            <option value="Bangladesh">Bangladesh</option>
+                            <option value="India">India</option>
+                            <option value="Pakistan">Pakistan</option>
+                            <option value="Nepal">Nepal</option>
+                            <option value="Sri Lanka">Sri Lanka</option>
+                            <option value="Malaysia">Malaysia</option>
+                            <option value="Singapore">Singapore</option>
+                            <option value="USA">USA</option>
+                            <option value="UK">UK</option>
+                            <option value="Canada">Canada</option>
+                            <option value="Australia">Australia</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input rounded-0" type="checkbox" name="is_default" id="is-default"
+                                   style="border-radius: 4px !important; border-color: var(--border-gray);">
+                            <label class="form-check-label" for="is-default" style="font-size: 14px;">
+                                <i class="fas fa-star text-warning me-1"></i>
+                                Set as default address
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn fk-btn-primary rounded-0 px-5" style="font-size: 14px; font-weight: 600; border-radius: 8px !important;">
+                        <i class="fas fa-plus-circle me-1"></i> Add Address
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+   কাস্টম লগআউট কনফার্মেশন মোডাল
+   ============================================================ -->
+<div class="logout-modal-overlay" id="logoutModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(6px); animation: modalFadeIn 0.3s ease;">
+    <div class="logout-modal-box" style="background: #fff; max-width: 420px; width: 90%; padding: 30px 28px; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center; animation: modalSlideUp 0.3s ease;">
+        <div style="width: 72px; height: 72px; background: #fff5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+            <i class="fas fa-sign-out-alt" style="font-size: 32px; color: #dc3545;"></i>
+        </div>
+        <h5 style="font-size: 20px; font-weight: 700; color: #212121; margin-bottom: 8px;">Logout Confirmation</h5>
+        <p style="font-size: 14px; color: #666; margin-bottom: 24px; line-height: 1.6;">
+            Are you sure you want to logout from your account?<br>
+            <span style="font-size: 13px; color: #999;">You will need to login again to access your account.</span>
+        </p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button onclick="closeLogoutModal()" style="padding: 10px 28px; border: 1px solid #e0e0e0; background: #fff; color: #212121; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; flex: 1;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">
+                Cancel
+            </button>
+            <a href="{% url 'accounts:logout' %}" style="padding: 10px 28px; border: none; background: linear-gradient(135deg, #dc3545, #c82333); color: #fff; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-decoration: none; flex: 1; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 4px 20px rgba(220, 53, 69, 0.35)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">
+                <i class="fas fa-sign-out-alt me-2"></i> Logout
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .fk-card {
+        border-radius: 0 !important;
+        box-shadow: var(--shadow-sm);
+    }
+    .fk-card:hover {
+        box-shadow: var(--shadow-md);
+    }
+    .fk-card-header {
+        font-size: 15px;
+        font-weight: 600;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-gray);
+        margin-bottom: 12px;
+    }
+    .list-group-item {
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 12px 16px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        color: var(--text-dark);
+    }
+    .list-group-item:hover {
+        background: var(--light-gray);
+        color: var(--primary-blue);
+    }
+    .list-group-item.active {
+        background: var(--light-gray);
+        color: var(--primary-blue);
+        border-left: 3px solid var(--primary-blue);
+    }
+    .list-group-item i {
+        width: 20px;
+        margin-right: 12px;
+    }
+    .address-card {
+        border-color: var(--border-gray) !important;
+        transition: all 0.3s ease;
+        background: var(--white);
+        border-radius: 8px !important;
+    }
+    .address-card:hover {
+        border-color: var(--primary-blue) !important;
+        box-shadow: var(--shadow-sm);
+    }
+    .form-control, .form-select {
+        border-radius: 8px !important;
+        border-color: var(--border-gray);
+        transition: all 0.3s ease;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 2px rgba(40, 116, 240, 0.1);
+    }
+    .form-check-input {
+        border-radius: 4px !important;
+        border-color: var(--border-gray);
+        cursor: pointer;
+    }
+    .form-check-input:checked {
+        background-color: var(--primary-blue);
+        border-color: var(--primary-blue);
+    }
+    .btn-outline-secondary {
+        border-radius: 6px !important;
+        border-color: var(--border-gray);
+        color: var(--text-dark);
+    }
+    .btn-outline-secondary:hover {
+        background: var(--light-gray);
+        border-color: var(--border-gray);
+        color: var(--text-dark);
+    }
+    .btn-outline-danger {
+        border-radius: 6px !important;
+    }
+    .btn-outline-success {
+        border-radius: 6px !important;
+    }
+    .fk-btn-primary {
+        border-radius: 8px !important;
+    }
+    .fk-btn-outline {
+        border-radius: 6px !important;
+    }
+    .text-blue {
+        color: var(--primary-blue) !important;
+    }
+    .badge {
+        border-radius: 4px !important;
+    }
+    .alert {
+        border-radius: 8px !important;
+    }
+    
+    /* মোডাল অ্যানিমেশন */
+    @keyframes modalFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    @keyframes modalSlideUp {
+        from { opacity: 0; transform: translateY(30px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    @media (max-width: 767.98px) {
+        .list-group-item {
+            padding: 10px 14px;
+            font-size: 13px;
+        }
+        .fk-card-header {
+            font-size: 14px;
+        }
+        .form-control, .form-select {
+            font-size: 13px !important;
+        }
+        .btn {
+            font-size: 13px !important;
+            padding: 8px 16px !important;
+        }
+        .address-card {
+            padding: 12px !important;
+        }
+        .address-card h6 {
+            font-size: 14px !important;
+        }
+        .address-card p {
+            font-size: 13px !important;
+        }
+        .logout-modal-box {
+            padding: 24px 20px !important;
+        }
+        .logout-modal-box h5 {
+            font-size: 18px !important;
+        }
+        .logout-modal-box p {
+            font-size: 13px !important;
+        }
+        .logout-modal-box button,
+        .logout-modal-box a {
+            font-size: 13px !important;
+            padding: 8px 20px !important;
+        }
+    }
+    @media (max-width: 575.98px) {
+        .list-group-item {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        .fk-card-header {
+            font-size: 13px;
+            padding-bottom: 8px;
+        }
+        .form-control, .form-select {
+            font-size: 12px !important;
+            padding: 6px 10px !important;
+        }
+        .btn {
+            font-size: 12px !important;
+            padding: 6px 12px !important;
+        }
+        .address-card {
+            padding: 10px !important;
+        }
+        .address-card h6 {
+            font-size: 13px !important;
+        }
+        .address-card p {
+            font-size: 12px !important;
+        }
+        .address-card .btn {
+            font-size: 11px !important;
+            padding: 4px 10px !important;
+        }
+        .row.g-3 {
+            --bs-gutter-y: 0.5rem;
+        }
+        .row.g-3 > [class*="col-"] {
+            padding-right: 6px;
+            padding-left: 6px;
+        }
+        .mt-3 {
+            margin-top: 8px !important;
+        }
+        .mt-4 {
+            margin-top: 12px !important;
+        }
+        .logout-modal-box {
+            padding: 20px 16px !important;
+            width: 95% !important;
+        }
+        .logout-modal-box h5 {
+            font-size: 16px !important;
+        }
+        .logout-modal-box p {
+            font-size: 12px !important;
+        }
+        .logout-modal-box .d-flex {
+            flex-direction: column !important;
+        }
+        .logout-modal-box button,
+        .logout-modal-box a {
+            font-size: 13px !important;
+            padding: 10px 20px !important;
+            width: 100% !important;
+        }
+    }
+</style>
+
+<!-- ============================================================
+   জাভাস্ক্রিপ্ট
+   ============================================================ -->
+{% block extra_js %}
+<script>
+    function showLogoutModal(event) {
+        event.preventDefault();
+        document.getElementById('logoutModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeLogoutModal() {
+        document.getElementById('logoutModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    
+    document.getElementById('logoutModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeLogoutModal();
+        }
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeLogoutModal();
+        }
+    });
+    
+    function setDefaultAddress(addressId) {
+        if (confirm('Set this as your default address?')) {
+            fetch(`/accounts/shipping-address/default/${addressId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Default address updated successfully', 'success');
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    showToast(data.message || 'Failed to set default address', 'error');
+                }
+            })
+            .catch(() => {
+                showToast('Something went wrong', 'error');
+            });
+        }
+    }
+    
+    document.getElementById('address-form')?.addEventListener('submit', function(e) {
+        const fullName = this.querySelector('input[name="full_name"]');
+        const phone = this.querySelector('input[name="phone"]');
+        const address = this.querySelector('textarea[name="address"]');
+        const city = this.querySelector('input[name="city"]');
+        
+        if (!fullName.value.trim() || fullName.value.trim().length < 3) {
+            e.preventDefault();
+            fullName.focus();
+            fullName.style.borderColor = '#dc3545';
+            showToast('Please enter your full name (min 3 characters)', 'error');
+            return false;
+        }
+        
+        if (!phone.value.trim() || phone.value.trim().length < 10) {
+            e.preventDefault();
+            phone.focus();
+            phone.style.borderColor = '#dc3545';
+            showToast('Please enter a valid phone number (min 10 digits)', 'error');
+            return false;
+        }
+        
+        if (!address.value.trim() || address.value.trim().length < 10) {
+            e.preventDefault();
+            address.focus();
+            address.style.borderColor = '#dc3545';
+            showToast('Please enter your full address (min 10 characters)', 'error');
+            return false;
+        }
+        
+        if (!city.value.trim() || city.value.trim().length < 3) {
+            e.preventDefault();
+            city.focus();
+            city.style.borderColor = '#dc3545';
+            showToast('Please enter your city (min 3 characters)', 'error');
+            return false;
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

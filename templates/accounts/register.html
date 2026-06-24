@@ -1,0 +1,197 @@
+<!-- templates/accounts/register.html -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register - Flipkart{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center" style="min-height: 80vh; align-items: center; padding: 20px;">
+    <div class="col-md-8 col-lg-6 col-xl-5">
+        <div class="register-card">
+            <!-- লোগো -->
+            <div class="text-center mb-4">
+                <div class="brand-logo">
+                    <span class="logo-text">Flipkart<span>.</span></span>
+                </div>
+                <h5 class="fw-700 mt-3" style="font-size: 20px; color: #212121;">Create Account</h5>
+                <p class="text-muted" style="font-size: 14px;">Join Flipkart and start shopping</p>
+            </div>
+            
+            <form method="POST" action="{% url 'accounts:register' %}">
+                {% csrf_token %}
+                
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} py-2" style="font-size: 13px; border: none; border-radius: 10px !important;">
+                        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <!-- ✅ ইমেইল -->
+                <div class="form-group mb-3">
+                    <label class="form-label fw-600" style="font-size: 13px; color: #212121;">Email Address <span class="text-danger">*</span></label>
+                    <input type="email" name="email" class="form-control form-control-lg" 
+                           placeholder="Enter your email address" required
+                           value="{{ form.email.value|default:'' }}"
+                           style="border-radius: 10px !important; border: 1.5px solid #e8e8e8; color: #212121; padding: 14px 20px; transition: all 0.3s ease; background: #fafafa;">
+                    <small class="text-muted" style="font-size: 11px;">We'll send you order updates</small>
+                </div>
+                
+                <!-- ফোন -->
+                <div class="form-group mb-3">
+                    <label class="form-label fw-600" style="font-size: 13px; color: #212121;">Phone Number</label>
+                    <input type="tel" name="phone" class="form-control form-control-lg" 
+                           placeholder="Enter phone number" required
+                           value="{{ form.phone.value|default:'' }}"
+                           style="border-radius: 10px !important; border: 1.5px solid #e8e8e8; color: #212121; padding: 14px 20px; transition: all 0.3s ease; background: #fafafa;">
+                </div>
+                
+                <!-- পাসওয়ার্ড -->
+                <div class="form-group mb-3">
+                    <label class="form-label fw-600" style="font-size: 13px; color: #212121;">Password</label>
+                    <div class="position-relative">
+                        <input type="password" name="password1" id="password1-input" class="form-control form-control-lg" 
+                               placeholder="Create a password" required
+                               style="border-radius: 10px !important; border: 1.5px solid #e8e8e8; color: #212121; padding: 14px 20px; transition: all 0.3s ease; background: #fafafa;">
+                        <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y" 
+                                onclick="togglePassword('password1-input', 'password1-icon')" 
+                                style="background: none; border: none; color: #999; padding-right: 16px;">
+                            <i class="fas fa-eye" id="password1-icon"></i>
+                        </button>
+                    </div>
+                    <div class="password-requirements mt-1" style="font-size: 11px; color: #999;">
+                        <div><i class="fas fa-circle" style="font-size: 6px; vertical-align: middle; color: #ccc;"></i> At least 8 characters</div>
+                        <div><i class="fas fa-circle" style="font-size: 6px; vertical-align: middle; color: #ccc;"></i> Must contain letters and numbers</div>
+                    </div>
+                </div>
+                
+                <!-- কনফর্ম -->
+                <div class="form-group mb-3">
+                    <label class="form-label fw-600" style="font-size: 13px; color: #212121;">Confirm Password</label>
+                    <div class="position-relative">
+                        <input type="password" name="password2" id="password2-input" class="form-control form-control-lg" 
+                               placeholder="Confirm your password" required
+                               style="border-radius: 10px !important; border: 1.5px solid #e8e8e8; color: #212121; padding: 14px 20px; transition: all 0.3s ease; background: #fafafa;">
+                        <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y" 
+                                onclick="togglePassword('password2-input', 'password2-icon')" 
+                                style="background: none; border: none; color: #999; padding-right: 16px;">
+                            <i class="fas fa-eye" id="password2-icon"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-register w-100 py-3" style="font-size: 16px; font-weight: 700; border-radius: 10px !important; background: #2874f0; border: none; color: #fff; transition: all 0.3s ease;">
+                    <i class="fas fa-user-plus me-2"></i> Create Account
+                </button>
+            </form>
+            
+            <hr class="my-4" style="border-color: #e8e8e8;">
+            
+            <div class="text-center">
+                <p class="mb-0" style="font-size: 14px; color: #666;">
+                    Already have an account? 
+                    <a href="{% url 'accounts:login' %}" class="fw-600 text-decoration-none" style="color: #2874f0;">Login here <i class="fas fa-chevron-right ms-1" style="font-size: 10px;"></i></a>
+                </p>
+            </div>
+            
+            <div class="text-center mt-3">
+                <p class="text-muted" style="font-size: 12px;">
+                    <i class="fas fa-lock me-1"></i> Your information is safe and secure
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .register-card {
+        background: #ffffff;
+        padding: 35px 35px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+    }
+    .register-card:hover {
+        box-shadow: 0 15px 50px rgba(40, 116, 240, 0.08);
+    }
+    .brand-logo { text-align: center; }
+    .logo-text { 
+        font-size: 36px; 
+        font-weight: 700; 
+        color: #2874f0; 
+        letter-spacing: -0.5px;
+    }
+    .logo-text span { 
+        color: #fb641b; 
+        font-style: italic;
+    }
+    .form-control {
+        border-radius: 10px !important;
+        border: 1.5px solid #e8e8e8 !important;
+        color: #212121 !important;
+        padding: 14px 20px !important;
+        transition: all 0.3s ease;
+        background: #fafafa !important;
+    }
+    .form-control:focus {
+        border-color: #2874f0 !important;
+        box-shadow: 0 0 0 4px rgba(40, 116, 240, 0.08) !important;
+        background: #ffffff !important;
+    }
+    .form-control::placeholder { color: #aaa !important; }
+    .btn-register {
+        background: #2874f0 !important;
+        border: none !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        border-radius: 10px !important;
+        padding: 14px !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-register:hover {
+        background: #1a5bc7 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(40, 116, 240, 0.25);
+    }
+    .alert { border-radius: 10px !important; }
+    .text-muted { color: #999 !important; }
+    .password-requirements { color: #999 !important; }
+    .password-requirements i { color: #ccc !important; }
+    
+    @media (max-width: 575.98px) {
+        .register-card { 
+            padding: 20px 16px !important; 
+            margin: 0 10px;
+            border-radius: 16px;
+        }
+        .logo-text { font-size: 28px; }
+        .form-control { 
+            font-size: 14px !important; 
+            padding: 12px 16px !important; 
+        }
+        .btn-register { 
+            font-size: 14px !important; 
+            padding: 14px !important; 
+        }
+        .password-requirements { font-size: 10px !important; }
+    }
+</style>
+
+<script>
+    function togglePassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (input.type === 'password') { 
+            input.type = 'text'; 
+            icon.className = 'fas fa-eye-slash'; 
+        } else { 
+            input.type = 'password'; 
+            icon.className = 'fas fa-eye'; 
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,86 @@
+<!-- ============================================================
+   ক্যাটাগরি ট্যাব (সব পেইজে একই)
+   ============================================================ -->
+<div class="fk-category-tabs" style="background: #fff; border-bottom: 1px solid #f0f0f0; padding: 8px 0; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; position: sticky; top: 0; z-index: 100;">
+    <div style="display: flex; gap: 4px; padding: 0 12px; min-width: max-content;">
+        
+        <!-- All Products -->
+        <a href="{% url 'products:product_list' %}" 
+           class="category-tab {% if not active_slug %}active{% endif %}" 
+           style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 500; text-decoration: none; transition: all 0.2s ease; background: {% if not active_slug %}#2874f0{% else %}#f1f3f6{% endif %}; color: {% if not active_slug %}#fff{% else %}#212121{% endif %}; white-space: nowrap;">
+            <i class="fas fa-th-large" style="font-size: 14px;"></i>
+            All Products
+            <span style="background: {% if not active_slug %}rgba(255,255,255,0.2){% else %}#e0e0e0{% endif %}; padding: 0 8px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: 4px;">
+                {{ total_products }}
+            </span>
+        </a>
+        
+        <!-- ক্যাটাগরি ট্যাব -->
+        {% for category in categories %}
+        <a href="{% url 'products:category_detail' category.slug %}" 
+           class="category-tab {% if active_slug == category.slug %}active{% endif %}" 
+           style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 500; text-decoration: none; transition: all 0.2s ease; background: {% if active_slug == category.slug %}#2874f0{% else %}#f1f3f6{% endif %}; color: {% if active_slug == category.slug %}#fff{% else %}#212121{% endif %}; white-space: nowrap;">
+            {% if category.get_image_url %}
+            <img src="{{ category.get_image_url }}" alt="{{ category.name }}" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover;">
+            {% else %}
+            <i class="fas fa-{{ category.icon|default:'tag' }}" style="font-size: 14px;"></i>
+            {% endif %}
+            {{ category.name }}
+            <span style="background: {% if active_slug == category.slug %}rgba(255,255,255,0.2){% else %}#e0e0e0{% endif %}; padding: 0 8px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: 4px;">
+                {{ category.product_count }}
+            </span>
+        </a>
+        {% endfor %}
+        
+    </div>
+</div>
+
+<style>
+    .fk-category-tabs {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .fk-category-tabs::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .category-tab {
+        transition: all 0.2s ease;
+        cursor: pointer;
+        user-select: none;
+    }
+    .category-tab:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .category-tab.active {
+        background: #2874f0 !important;
+        color: #fff !important;
+        box-shadow: 0 2px 12px rgba(40, 116, 240, 0.25);
+    }
+    .category-tab.active span {
+        background: rgba(255,255,255,0.2) !important;
+        color: #fff !important;
+    }
+    
+    @media (max-width: 575.98px) {
+        .category-tab {
+            font-size: 11px !important;
+            padding: 6px 12px !important;
+        }
+        .category-tab i {
+            font-size: 12px !important;
+        }
+        .category-tab img {
+            width: 16px !important;
+            height: 16px !important;
+        }
+        .category-tab span {
+            font-size: 9px !important;
+            padding: 0 6px !important;
+        }
+        .fk-category-tabs {
+            padding: 6px 0 !important;
+        }
+    }
+</style>

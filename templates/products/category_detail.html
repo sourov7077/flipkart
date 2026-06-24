@@ -1,0 +1,752 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% load product_filters %}
+
+
+{% block title %}{{ category.name }} - Flipkart{% endblock %}
+
+{% block content %}
+
+
+<!-- ============================================================
+   টপ বার (Back Button + Category Name)
+   ============================================================ -->
+<div class="fk-category-topbar" style="background: #fff; padding: 10px 16px; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+    <a href="javascript:history.back()" class="back-btn" style="color: #2874f0; font-size: 18px; text-decoration: none; display: flex; align-items: center; gap: 6px;">
+        <i class="fas fa-arrow-left" style="transition: transform 0.2s ease;"></i>
+        <span style="font-size: 14px; font-weight: 500;">Back</span>
+    </a>
+    <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
+        {% if category.get_image_url %}
+        <img src="{{ category.get_image_url }}" alt="{{ category.name }}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+        {% else %}
+        <i class="fas fa-{{ category.icon|default:'shopping-bag' }}" style="color: #2874f0; font-size: 20px;"></i>
+        {% endif %}
+        <h1 style="font-size: 17px; font-weight: 600; margin: 0; color: #212121;">{{ category.name }}</h1>
+    </div>
+    <div style="font-size: 13px; color: #878787; background: #f1f3f6; padding: 4px 12px; border-radius: 20px;">
+        <span class="fw-600 text-dark">{{ total_products }}</span> Products
+    </div>
+</div>
+
+{% include "components/category_tabs.html" with active_slug=category.slug %}
+<!-- ============================================================
+   মেইন কন্টেন্ট (Left Sidebar + Right Product Grid)
+   ============================================================ -->
+<div class="fk-category-main" style="display: flex; gap: 0; background: #f1f3f6; min-height: calc(100vh - 70px);">
+    
+    <!-- ===== বাম পাশে সাইডবার (ট্যাব + ফিল্টার) ===== -->
+    <div class="fk-sidebar" style="width: 260px; min-width: 260px; background: #fff; border-right: 1px solid #f0f0f0; overflow-y: auto; height: calc(100vh - 70px); position: sticky; top: 70px; display: flex; flex-direction: column;">
+        
+        <!-- ===== ট্যাবার (Horizontal Scroll - Index.html এর মত) ===== -->
+        <div class="fk-sidebar-tabs" style="padding: 12px 12px 8px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0;">
+            <div style="font-size: 13px; font-weight: 600; color: #212121; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-th-list" style="color: #2874f0;"></i>
+                Categories
+            </div>
+            <div class="sidebar-tabs-scroll" style="overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+                <div style="display: flex; gap: 8px; width: max-content; flex-wrap: nowrap;">
+                    <!-- সক্রিয় ক্যাটাগরি -->
+                    <a href="{% url 'products:category_detail' category.slug %}" 
+                       class="sidebar-tab active" 
+                       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; text-decoration: none; white-space: nowrap; background: #2874f0; color: #fff; transition: all 0.2s ease;">
+                        {% if category.get_image_url %}
+                        <img src="{{ category.get_image_url }}" alt="{{ category.name }}" style="width: 18px; height: 18px; border-radius: 50%; object-fit: cover;">
+                        {% else %}
+                        <i class="fas fa-{{ category.icon|default:'tag' }}" style="font-size: 12px;"></i>
+                        {% endif %}
+                        {{ category.name }}
+                    </a>
+                    
+                    <!-- অন্যান্য ক্যাটাগরি -->
+                    {% for cat in categories %}
+                    {% if cat.id != category.id %}
+                    <a href="{% url 'products:category_detail' cat.slug %}" 
+                       class="sidebar-tab" 
+                       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; text-decoration: none; white-space: nowrap; background: #f1f3f6; color: #212121; transition: all 0.2s ease;">
+                        {% if cat.get_image_url %}
+                        <img src="{{ cat.get_image_url }}" alt="{{ cat.name }}" style="width: 18px; height: 18px; border-radius: 50%; object-fit: cover;">
+                        {% else %}
+                        <i class="fas fa-{{ cat.icon|default:'tag' }}" style="font-size: 12px;"></i>
+                        {% endif %}
+                        {{ cat.name }}
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- ===== ফিল্টার অপশন (কমপ্যাক্ট) ===== -->
+        <div class="fk-sidebar-filters" style="padding: 12px 14px; flex: 1; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span style="font-size: 13px; font-weight: 600; color: #212121;">
+                    <i class="fas fa-sliders-h me-2" style="color: #2874f0; font-size: 13px;"></i>Filters
+                </span>
+                <a href="{% url 'products:category_detail' category.slug %}" style="font-size: 12px; color: #2874f0; text-decoration: none; font-weight: 500;">
+                    Clear All
+                </a>
+            </div>
+            
+            <form method="GET" id="filter-form">
+                
+                <!-- প্রাইস রেঞ্জ (Compact) -->
+                <div style="margin-bottom: 14px;">
+                    <label style="font-size: 12px; font-weight: 600; color: #212121; display: block; margin-bottom: 4px;">
+                        <i class="fas fa-money-bill-wave me-1" style="color: #2874f0;"></i> Price
+                    </label>
+                    <div style="display: flex; gap: 6px;">
+                        <input type="number" name="min_price" class="form-control form-control-sm" 
+                               placeholder="Min" value="{{ request.GET.min_price }}" 
+                               style="border-radius: 4px; border: 1px solid #e0e0e0; font-size: 12px; height: 30px; width: 50%; padding: 0 8px;">
+                        <input type="number" name="max_price" class="form-control form-control-sm" 
+                               placeholder="Max" value="{{ request.GET.max_price }}" 
+                               style="border-radius: 4px; border: 1px solid #e0e0e0; font-size: 12px; height: 30px; width: 50%; padding: 0 8px;">
+                    </div>
+                </div>
+                
+                <!-- সর্ট বাই (Compact) -->
+                <div style="margin-bottom: 14px;">
+                    <label style="font-size: 12px; font-weight: 600; color: #212121; display: block; margin-bottom: 4px;">
+                        <i class="fas fa-sort me-1" style="color: #2874f0;"></i> Sort
+                    </label>
+                    <select name="sort_by" class="form-select form-select-sm" onchange="this.form.submit()" style="border-radius: 4px; border: 1px solid #e0e0e0; font-size: 12px; height: 30px; width: 100%; padding: 0 8px;">
+                        <option value="newest" {% if request.GET.sort_by == 'newest' %}selected{% endif %}>Newest</option>
+                        <option value="price_low" {% if request.GET.sort_by == 'price_low' %}selected{% endif %}>Price: Low-High</option>
+                        <option value="price_high" {% if request.GET.sort_by == 'price_high' %}selected{% endif %}>Price: High-Low</option>
+                        <option value="name" {% if request.GET.sort_by == 'name' %}selected{% endif %}>Name A-Z</option>
+                        <option value="discount" {% if request.GET.sort_by == 'discount' %}selected{% endif %}>Discount %</option>
+                    </select>
+                </div>
+                
+                <!-- অ্যাকশন বাটন (Compact) -->
+                <div style="display: flex; gap: 6px;">
+                    <button type="submit" class="btn btn-primary btn-sm flex-fill" style="background: #2874f0; border: none; border-radius: 4px; padding: 6px 10px; font-size: 12px; font-weight: 500; color: #fff; height: 30px;">
+                        <i class="fas fa-search me-1"></i> Apply
+                    </button>
+                    <a href="{% url 'products:category_detail' category.slug %}" class="btn btn-outline-secondary btn-sm flex-fill" style="border-radius: 4px; border: 1px solid #e0e0e0; padding: 6px 10px; font-size: 12px; font-weight: 500; color: #212121; height: 30px;">
+                        <i class="fas fa-times me-1"></i> Clear
+                    </a>
+                </div>
+            </form>
+            
+            <!-- সাব-ক্যাটাগরি (যদি থাকে) -->
+            {% if subcategories %}
+            <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #f0f0f0;">
+                <div style="font-size: 12px; font-weight: 600; color: #212121; margin-bottom: 8px;">
+                    <i class="fas fa-list-ul me-1" style="color: #2874f0;"></i> Sub Categories
+                </div>
+                {% for sub in subcategories %}
+                <a href="{% url 'products:category_detail' sub.slug %}" 
+                   style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; text-decoration: none; color: #212121; font-size: 12px; border-bottom: 1px solid #f5f5f5;">
+                    <span>{{ sub.name }}</span>
+                    <span style="background: #f1f3f6; padding: 0 8px; border-radius: 12px; font-size: 10px; color: #878787;">{{ sub.products.count }}</span>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- মোবাইলে ফিল্টার টগল -->
+        <div class="d-md-none" style="padding: 8px 14px; border-top: 1px solid #f0f0f0; flex-shrink: 0;">
+            <button class="btn btn-outline-primary btn-sm w-100" onclick="toggleFilter()" style="border-radius: 4px; border: 1px solid #2874f0; color: #2874f0; padding: 6px; font-size: 12px;">
+                <i class="fas fa-filter me-2"></i> Toggle Filters
+            </button>
+        </div>
+    </div>
+    
+    <!-- ===== ডান পাশে প্রোডাক্ট গ্রিড (Horizontal Scroll) ===== -->
+    <div class="fk-product-grid" style="flex: 1; padding: 12px 16px; background: #f1f3f6; overflow-y: auto;">
+        
+        <!-- প্রোডাক্ট কাউন্ট -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 6px;">
+            <p style="margin: 0; font-size: 13px; color: #878787;">
+                Showing <span class="fw-600 text-dark">{{ products|length }}</span> of <span class="fw-600 text-dark">{{ total_products }}</span> products
+            </p>
+            <div style="display: flex; gap: 4px;">
+                <button class="btn btn-sm btn-outline-secondary active" onclick="setView('grid')" style="border-radius: 4px; padding: 2px 8px; font-size: 11px; border-color: #2874f0; background: #2874f0; color: #fff;">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="setView('list')" style="border-radius: 4px; padding: 2px 8px; font-size: 11px;">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- ===== প্রোডাক্ট গ্রিড (Horizontal Scroll) ===== -->
+        {% if products %}
+        <div class="products-scroll-wrapper" style="overflow-x: auto; overflow-y: hidden; padding: 4px 0; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+            <div class="d-flex gap-3" style="width: max-content; min-width: 100%; flex-wrap: nowrap;">
+                {% for product in products %}
+                <div class="product-slide" style="min-width: 210px; max-width: 230px; flex: 0 0 auto;">
+                    <div class="fk-product-card">
+                        <div class="product-image" style="height: 190px; position: relative; background: #f8f9fa; display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 8px 8px 0 0;">
+                            {% if product.get_image_url %}
+                            <img src="{{ product.get_image_url }}" alt="{{ product.name }}" style="max-height: 100%; max-width: 100%; object-fit: contain; transition: transform 0.3s ease;">
+                            {% else %}
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                            {% endif %}
+                            
+                            {% if product.discount_percentage > 0 %}
+                            <span class="fk-discount-badge" style="position: absolute; top: 6px; left: 6px; background: linear-gradient(135deg, #fb641b, #f57c00); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 10px; border-radius: 4px; box-shadow: 0 2px 8px rgba(251, 100, 27, 0.3); z-index: 2;">
+                                {{ product.discount_percentage }}% OFF
+                            </span>
+                            {% endif %}
+                            
+                            {% if product.is_featured %}
+                            <span class="fk-featured-badge" style="position: absolute; top: 6px; right: 6px; background: linear-gradient(135deg, #2874f0, #1a5bc7); color: #fff; font-size: 8px; font-weight: 700; padding: 2px 8px; border-radius: 4px; box-shadow: 0 2px 8px rgba(40, 116, 240, 0.3); z-index: 2;">
+                                ⭐ Featured
+                            </span>
+                            {% endif %}
+                            
+                            {% if not product.in_stock %}
+                            <span class="fk-out-of-stock" style="position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; font-size: 10px; font-weight: 600; padding: 3px 14px; border-radius: 20px; z-index: 2; backdrop-filter: blur(4px);">
+                                Out of Stock
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="product-body" style="padding: 8px 10px 10px; background: #fff;">
+                            <div class="product-title" style="font-size: 13px; font-weight: 500; color: #212121; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;">
+                                {{ product.name|truncatechars:28 }}
+                            </div>
+                            
+                            <div class="product-price" style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+                                <span class="current" style="font-size: 16px; font-weight: 700; color: #212121;">₹{{ product.price }}</span>
+                                {% if product.old_price %}
+                                <span class="original" style="font-size: 12px; font-weight: 400; color: #878787; text-decoration: line-through;">₹{{ product.old_price }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            {% if product.discount_percentage > 0 %}
+                            <div style="margin-top: 1px;">
+                                <span style="font-size: 11px; font-weight: 600; color: #388e3c; background: #e8f5e9; padding: 0 8px; border-radius: 12px; display: inline-block;">
+                                    {{ product.discount_percentage }}% off
+                                </span>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="product-rating" style="display: flex; align-items: center; gap: 4px; margin-top: 3px; font-size: 11px; color: #878787;">
+                                <span style="background: #388e3c; color: #fff; padding: 0 6px; border-radius: 3px; font-size: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 2px;">
+                                    {{ product.rating|default:"4.2" }} <i class="fas fa-star" style="font-size: 8px;"></i>
+                                </span>
+                                <span>({{ product.review_count|default:"0" }})</span>
+                            </div>
+                        </div>
+                        
+                        <div class="product-footer" style="padding: 6px 10px 10px; border-top: 1px solid #f0f0f0; display: flex; gap: 4px; background: #fff;">
+                            <a href="{% url 'products:product_detail' product.id %}" class="btn btn-outline-primary btn-sm" style="flex: 1; font-size: 11px; padding: 4px 6px; border-radius: 4px; font-weight: 600; border-color: #2874f0; color: #2874f0;">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if product.in_stock %}
+                            <form action="{% url 'cart:cart_add' product.id %}" method="post" style="flex: 1;">
+                                {% csrf_token %}
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-primary btn-sm w-100 add-to-cart-btn" style="font-size: 11px; padding: 4px 6px; border-radius: 4px; font-weight: 600; background: #2874f0; border-color: #2874f0;">
+                                    <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                            <button class="btn btn-outline-danger btn-sm wishlist-btn" data-product-id="{{ product.id }}" style="flex: 0 0 32px; padding: 4px 0; font-size: 13px; border-radius: 4px;">
+                                <i class="{% if product.in_wishlist %}fas{% else %}far{% endif %} fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- পেজিনেশন -->
+        {% if products.has_other_pages %}
+        <div style="display: flex; justify-content: center; align-items: center; gap: 4px; margin-top: 16px; padding: 12px 0; flex-wrap: wrap;">
+            {% if products.has_previous %}
+            <a href="?page={{ products.previous_page_number }}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.sort_by %}&sort_by={{ request.GET.sort_by }}{% endif %}" 
+               class="btn btn-outline-primary btn-sm" style="border-radius: 4px; font-size: 12px; padding: 4px 12px;">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            {% endif %}
+            
+            {% for num in products.paginator.page_range %}
+                {% if products.number == num %}
+                <span class="btn btn-primary btn-sm" style="border-radius: 4px; font-size: 12px; padding: 4px 12px; background: #2874f0; border-color: #2874f0;">{{ num }}</span>
+                {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                <a href="?page={{ num }}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.sort_by %}&sort_by={{ request.GET.sort_by }}{% endif %}" 
+                   class="btn btn-outline-secondary btn-sm" style="border-radius: 4px; font-size: 12px; padding: 4px 12px; border-color: #e0e0e0; color: #212121;">
+                    {{ num }}
+                </a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if products.has_next %}
+            <a href="?page={{ products.next_page_number }}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.sort_by %}&sort_by={{ request.GET.sort_by }}{% endif %}" 
+               class="btn btn-outline-primary btn-sm" style="border-radius: 4px; font-size: 12px; padding: 4px 12px;">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <!-- খালি অবস্থা -->
+        <div style="text-align: center; padding: 40px 20px; background: #fff; border-radius: 8px;">
+            <i class="fas fa-box-open" style="font-size: 48px; color: #878787; opacity: 0.3;"></i>
+            <h5 style="font-size: 18px; font-weight: 700; color: #212121; margin-top: 12px;">No Products Found</h5>
+            <p style="font-size: 13px; color: #878787; max-width: 350px; margin: 6px auto 16px;">
+                There are no products in "<strong>{{ category.name }}</strong>" category yet.
+            </p>
+            <a href="{% url 'products:product_list' %}" class="btn btn-primary" style="background: #2874f0; border: none; border-radius: 4px; padding: 8px 28px; font-size: 13px; font-weight: 500;">
+                <i class="fas fa-store me-2"></i> Browse All
+            </a>
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+
+<!-- ============================================================
+   স্টাইল ওভাররাইড
+   ============================================================ -->
+<style>
+    /* ===== স্ক্রলবার হাইড ===== */
+    .products-scroll-wrapper::-webkit-scrollbar,
+    .sidebar-tabs-scroll::-webkit-scrollbar {
+        display: none;
+    }
+    .products-scroll-wrapper,
+    .sidebar-tabs-scroll {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    
+    /* ===== সাইডবার ট্যাব ===== */
+    .sidebar-tab {
+        transition: all 0.25s ease;
+    }
+    .sidebar-tab:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .sidebar-tab.active {
+        background: #2874f0 !important;
+        color: #fff !important;
+    }
+    
+    /* ===== প্রোডাক্ট কার্ড ===== */
+    .fk-product-card {
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        border-radius: 8px;
+        border: 1px solid #f0f0f0;
+        background: #fff;
+        overflow: hidden;
+        height: 100%;
+        min-height: 310px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        width: 100%;
+    }
+    .fk-product-card:hover {
+        box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+        transform: translateY(-4px);
+        border-color: #2874f0;
+    }
+    .fk-product-card:hover .product-image img {
+        transform: scale(1.05);
+    }
+    .fk-product-card .product-image img {
+        transition: transform 0.4s ease;
+    }
+    
+    /* ===== অ্যানিমেশন ===== */
+    .product-slide {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+    .product-slide:nth-child(1) { animation-delay: 0.03s; }
+    .product-slide:nth-child(2) { animation-delay: 0.06s; }
+    .product-slide:nth-child(3) { animation-delay: 0.09s; }
+    .product-slide:nth-child(4) { animation-delay: 0.12s; }
+    .product-slide:nth-child(5) { animation-delay: 0.15s; }
+    .product-slide:nth-child(6) { animation-delay: 0.18s; }
+    .product-slide:nth-child(7) { animation-delay: 0.21s; }
+    .product-slide:nth-child(8) { animation-delay: 0.24s; }
+    
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* ===== ব্যাক বাটন ===== */
+    .back-btn:hover {
+        color: #1a5bc7 !important;
+    }
+    .back-btn:hover i {
+        transform: translateX(-3px);
+    }
+    .back-btn i {
+        transition: transform 0.2s ease;
+    }
+    
+    /* ===== উইশলিস্ট ===== */
+    .wishlist-btn:hover {
+        background: #dc3545 !important;
+        color: #fff !important;
+        transform: scale(1.05);
+    }
+    .wishlist-btn.btn-danger {
+        background: #dc3545 !important;
+        border-color: #dc3545 !important;
+        color: #fff !important;
+    }
+    
+    /* ===== ফিল্টার ফর্ম ===== */
+    .fk-sidebar-filters .form-control:focus,
+    .fk-sidebar-filters .form-select:focus {
+        border-color: #2874f0;
+        box-shadow: 0 0 0 2px rgba(40, 116, 240, 0.08);
+    }
+    .fk-sidebar-filters .form-control:hover,
+    .fk-sidebar-filters .form-select:hover {
+        border-color: #2874f0;
+    }
+    
+    /* ===== মোবাইল রেস্পন্সিভ ===== */
+    @media (max-width: 991.98px) {
+        .fk-sidebar {
+            width: 220px !important;
+            min-width: 220px !important;
+        }
+        .product-slide {
+            min-width: 180px !important;
+            max-width: 190px !important;
+        }
+        .fk-product-card {
+            min-height: 280px !important;
+        }
+        .fk-product-card .product-image {
+            height: 160px !important;
+        }
+        .fk-product-card .product-title {
+            font-size: 12px !important;
+        }
+        .fk-product-card .product-price .current {
+            font-size: 15px !important;
+        }
+        .fk-category-topbar h1 {
+            font-size: 15px !important;
+        }
+        .sidebar-tab {
+            font-size: 11px !important;
+            padding: 4px 12px !important;
+        }
+        .sidebar-tab img {
+            width: 16px !important;
+            height: 16px !important;
+        }
+    }
+    
+    @media (max-width: 767.98px) {
+        .fk-sidebar {
+            display: none !important;
+        }
+        .fk-sidebar.mobile-show {
+            display: flex !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 1000 !important;
+            background: #fff !important;
+            border-right: none !important;
+            flex-direction: column !important;
+        }
+        .fk-sidebar.mobile-show .d-md-none {
+            display: block !important;
+        }
+        .fk-category-topbar {
+            padding: 6px 12px !important;
+            top: 0 !important;
+        }
+        .fk-category-topbar h1 {
+            font-size: 14px !important;
+        }
+        .fk-category-topbar .back-btn {
+            font-size: 16px !important;
+        }
+        .fk-category-topbar .back-btn span {
+            font-size: 12px !important;
+        }
+        .product-slide {
+            min-width: 160px !important;
+            max-width: 170px !important;
+        }
+        .fk-product-card {
+            min-height: 260px !important;
+        }
+        .fk-product-card .product-image {
+            height: 140px !important;
+        }
+        .fk-product-card .product-title {
+            font-size: 12px !important;
+        }
+        .fk-product-card .product-price .current {
+            font-size: 14px !important;
+        }
+        .fk-product-card .product-footer .btn {
+            font-size: 10px !important;
+            padding: 3px 4px !important;
+        }
+        .fk-product-grid {
+            padding: 8px !important;
+        }
+        .fk-product-grid .products-scroll-wrapper {
+            padding: 2px 0 !important;
+        }
+        .fk-product-grid .products-scroll-wrapper .d-flex {
+            gap: 8px !important;
+        }
+    }
+    
+    @media (max-width: 575.98px) {
+        .product-slide {
+            min-width: 140px !important;
+            max-width: 150px !important;
+        }
+        .fk-product-card {
+            min-height: 230px !important;
+        }
+        .fk-product-card .product-image {
+            height: 120px !important;
+        }
+        .fk-product-card .product-title {
+            font-size: 11px !important;
+        }
+        .fk-product-card .product-price .current {
+            font-size: 13px !important;
+        }
+        .fk-product-card .product-price .original {
+            font-size: 11px !important;
+        }
+        .fk-product-card .product-footer {
+            flex-wrap: wrap !important;
+            gap: 3px !important;
+            padding: 4px 8px 8px !important;
+        }
+        .fk-product-card .product-footer .btn {
+            font-size: 9px !important;
+            padding: 2px 4px !important;
+            min-height: 24px !important;
+        }
+        .wishlist-btn {
+            flex: 0 0 26px !important;
+            font-size: 11px !important;
+        }
+        .fk-category-topbar .back-btn span {
+            display: none !important;
+        }
+        .fk-category-topbar h1 {
+            font-size: 13px !important;
+        }
+        .fk-category-topbar .text-dark {
+            font-size: 11px !important;
+        }
+        .fk-category-topbar .bg-light {
+            padding: 2px 10px !important;
+        }
+        .fk-category-topbar img {
+            width: 26px !important;
+            height: 26px !important;
+        }
+        .fk-sidebar-filters {
+            padding: 8px 12px !important;
+        }
+        .fk-sidebar-tabs {
+            padding: 8px 10px !important;
+        }
+        .sidebar-tab {
+            font-size: 10px !important;
+            padding: 3px 10px !important;
+        }
+        .sidebar-tab img {
+            width: 14px !important;
+            height: 14px !important;
+        }
+    }
+</style>
+
+<!-- ============================================================
+   জাভাস্ক্রিপ্ট
+   ============================================================ -->
+<script>
+    // ============================================================
+    // ভিউ টগল (গ্রিড/লিস্ট)
+    // ============================================================
+    function setView(view) {
+        const buttons = document.querySelectorAll('.btn-outline-secondary');
+        const slides = document.querySelectorAll('.product-slide');
+        
+        buttons.forEach(btn => {
+            btn.classList.remove('active');
+            btn.style.background = 'transparent';
+            btn.style.color = '#212121';
+            btn.style.borderColor = '#e0e0e0';
+        });
+        
+        if (view === 'grid') {
+            if (buttons[0]) {
+                buttons[0].classList.add('active');
+                buttons[0].style.background = '#2874f0';
+                buttons[0].style.color = '#fff';
+                buttons[0].style.borderColor = '#2874f0';
+            }
+            slides.forEach(slide => {
+                slide.style.minWidth = '210px';
+                slide.style.maxWidth = '230px';
+            });
+            localStorage.setItem('productView', 'grid');
+        } else {
+            if (buttons[1]) {
+                buttons[1].classList.add('active');
+                buttons[1].style.background = '#2874f0';
+                buttons[1].style.color = '#fff';
+                buttons[1].style.borderColor = '#2874f0';
+            }
+            slides.forEach(slide => {
+                slide.style.minWidth = '100%';
+                slide.style.maxWidth = '100%';
+            });
+            localStorage.setItem('productView', 'list');
+        }
+    }
+    
+    // লোড হলে পূর্ববর্তী ভিউ সেট করা
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedView = localStorage.getItem('productView') || 'grid';
+        setView(savedView);
+    });
+    
+    // ============================================================
+    // ফিল্টার টগল (মোবাইলের জন্য)
+    // ============================================================
+    function toggleFilter() {
+        const sidebar = document.querySelector('.fk-sidebar');
+        sidebar.classList.toggle('mobile-show');
+        document.body.style.overflow = sidebar.classList.contains('mobile-show') ? 'hidden' : '';
+        
+        // মোবাইলে টগল বাটন টেক্সট পরিবর্তন
+        const btn = document.querySelector('.d-md-none .btn');
+        if (btn) {
+            if (sidebar.classList.contains('mobile-show')) {
+                btn.innerHTML = '<i class="fas fa-times me-2"></i> Close Filters';
+            } else {
+                btn.innerHTML = '<i class="fas fa-filter me-2"></i> Toggle Filters';
+            }
+        }
+    }
+    
+    // মোবাইলে ফিল্টার বন্ধ করার জন্য
+    document.addEventListener('click', function(e) {
+        const sidebar = document.querySelector('.fk-sidebar');
+        const toggleBtn = document.querySelector('.d-md-none .btn');
+        if (window.innerWidth < 768) {
+            if (sidebar && sidebar.classList.contains('mobile-show')) {
+                if (!sidebar.contains(e.target) && !toggleBtn?.contains(e.target)) {
+                    sidebar.classList.remove('mobile-show');
+                    document.body.style.overflow = '';
+                    if (toggleBtn) {
+                        toggleBtn.innerHTML = '<i class="fas fa-filter me-2"></i> Toggle Filters';
+                    }
+                }
+            }
+        }
+    });
+    
+    // ============================================================
+    // এড টু কার্ট AJAX
+    // ============================================================
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const form = this.closest('form');
+            const originalText = this.innerHTML;
+            
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            this.disabled = true;
+            
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new FormData(form)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('✅ Added to cart!', 'success');
+                    updateCartCount(data.cart_count);
+                } else {
+                    showToast(data.message || '❌ Failed to add', 'error');
+                }
+            })
+            .catch(() => {
+                showToast('❌ Something went wrong', 'error');
+            })
+            .finally(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+            });
+        });
+    });
+    
+    // ============================================================
+    // উইশলিস্ট টগল
+    // ============================================================
+    document.querySelectorAll('.wishlist-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            const button = this;
+            const icon = button.querySelector('i');
+            const originalHTML = button.innerHTML;
+            
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            fetch(`/wishlist/toggle/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.in_wishlist) {
+                        icon.className = 'fas fa-heart';
+                        button.classList.add('btn-danger');
+                        button.classList.remove('btn-outline-danger');
+                        showToast('❤️ Added to wishlist!', 'success');
+                    } else {
+                        icon.className = 'far fa-heart';
+                        button.classList.remove('btn-danger');
+                        button.classList.add('btn-outline-danger');
+                        showToast('💔 Removed from wishlist', 'info');
+                    }
+                    updateWishlistCount(data.wishlist_count);
+                }
+            })
+            .catch(() => {
+                showToast('❌ Something went wrong', 'error');
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.innerHTML = originalHTML;
+            });
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,1344 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Flipkart{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================
+   টপ বার (Back Button + Product Name)
+   ============================================================ -->
+<div class="fk-detail-topbar">
+    <a href="javascript:history.back()" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back</span>
+    </a>
+    <div style="flex: 1; overflow: hidden;">
+        <h1>{{ product.name|truncatechars:40 }}</h1>
+    </div>
+    <div style="display: flex; gap: 8px; flex-shrink: 0;">
+        <button class="btn btn-sm btn-outline-danger rounded-circle wishlist-btn-top" 
+                data-product-id="{{ product.id }}" 
+                style="width: 38px; height: 38px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50% !important; transition: all 0.3s ease; border: 2px solid {% if in_wishlist %}#dc3545{% else %}#e0e0e0{% endif %}; background: {% if in_wishlist %}#dc3545{% else %}transparent{% endif %}; color: {% if in_wishlist %}#fff{% else %}#212121{% endif %};">
+            <i class="{% if in_wishlist %}fas{% else %}far{% endif %} fa-heart" style="font-size: 18px; transition: all 0.3s ease;"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-secondary rounded-circle share-btn" onclick="openShareModal()">
+            <i class="fas fa-share-alt"></i>
+        </button>
+    </div>
+</div>
+
+<!-- ============================================================
+   শেয়ার মডাল
+   ============================================================ -->
+<div class="share-modal" id="shareModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="share-modal-content" style="background: #fff; border-radius: 20px 20px 0 0; max-width: 500px; width: 100%; padding: 24px 20px 32px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin: 0;">Share Product</h3>
+            <button onclick="closeShareModal()" style="background: none; border: none; font-size: 24px; color: #878787; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;">
+            <a href="#" onclick="shareOnFacebook('{{ product.name }}', '{{ product.get_image_url|default:'' }}', '{{ request.build_absolute_uri }}')" target="_blank" class="share-platform" style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #212121; padding: 10px; border-radius: 12px; transition: all 0.3s ease; min-width: 60px; background: #f8f9fa; border: 1px solid #e8e8e8;">
+                <span style="width: 48px; height: 48px; border-radius: 50%; background: #1877f2; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px;"><i class="fab fa-facebook-f"></i></span>
+                <span style="font-size: 11px; font-weight: 500;">Facebook</span>
+            </a>
+            <a href="#" onclick="shareOnWhatsApp('{{ product.name }}', '{{ request.build_absolute_uri }}')" target="_blank" class="share-platform" style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #212121; padding: 10px; border-radius: 12px; transition: all 0.3s ease; min-width: 60px; background: #f8f9fa; border: 1px solid #e8e8e8;">
+                <span style="width: 48px; height: 48px; border-radius: 50%; background: #25d366; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px;"><i class="fab fa-whatsapp"></i></span>
+                <span style="font-size: 11px; font-weight: 500;">WhatsApp</span>
+            </a>
+            <a href="#" onclick="shareOnTelegram('{{ product.name }}', '{{ request.build_absolute_uri }}')" target="_blank" class="share-platform" style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #212121; padding: 10px; border-radius: 12px; transition: all 0.3s ease; min-width: 60px; background: #f8f9fa; border: 1px solid #e8e8e8;">
+                <span style="width: 48px; height: 48px; border-radius: 50%; background: #0088cc; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px;"><i class="fab fa-telegram-plane"></i></span>
+                <span style="font-size: 11px; font-weight: 500;">Telegram</span>
+            </a>
+            <a href="#" onclick="shareOnTwitter('{{ product.name }}', '{{ request.build_absolute_uri }}')" target="_blank" class="share-platform" style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #212121; padding: 10px; border-radius: 12px; transition: all 0.3s ease; min-width: 60px; background: #f8f9fa; border: 1px solid #e8e8e8;">
+                <span style="width: 48px; height: 48px; border-radius: 50%; background: #000; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px;"><i class="fab fa-x-twitter"></i></span>
+                <span style="font-size: 11px; font-weight: 500;">Twitter</span>
+            </a>
+            <a href="#" onclick="shareOnInstagram('{{ product.name }}', '{{ request.build_absolute_uri }}')" target="_blank" class="share-platform" style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #212121; padding: 10px; border-radius: 12px; transition: all 0.3s ease; min-width: 60px; background: #f8f9fa; border: 1px solid #e8e8e8;">
+                <span style="width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #f09433, #d62976, #962fbf); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 22px;"><i class="fab fa-instagram"></i></span>
+                <span style="font-size: 11px; font-weight: 500;">Instagram</span>
+            </a>
+            <button onclick="copyProductLink('{{ request.build_absolute_uri }}')" class="share-platform" style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #212121; padding: 10px; border-radius: 12px; transition: all 0.3s ease; min-width: 60px; background: #f8f9fa; border: 1px solid #e8e8e8; cursor: pointer; border: none;">
+                <span style="width: 48px; height: 48px; border-radius: 50%; background: #2874f0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px;"><i class="fas fa-link"></i></span>
+                <span style="font-size: 11px; font-weight: 500;">Copy Link</span>
+            </button>
+        </div>
+        
+        <div style="margin-top: 16px; padding: 10px 14px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-link" style="color: #2874f0; font-size: 14px;"></i>
+            <span style="font-size: 12px; color: #878787; word-break: break-all; flex: 1;">{{ request.build_absolute_uri }}</span>
+            <button onclick="copyProductLink('{{ request.build_absolute_uri }}')" style="background: #2874f0; border: none; color: #fff; padding: 4px 14px; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer;">Copy</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+   লাইটবক্স/মডাল গ্যালারি
+   ============================================================ -->
+<div id="imageModal" class="image-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.92); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(8px); padding: 20px;">
+    <div class="modal-content-wrapper" style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; align-items: center; justify-content: center; animation: modalZoomIn 0.3s ease forwards;">
+        
+        <!-- ক্লোজ বাটন -->
+        <button onclick="closeModal()" style="position: absolute; top: -50px; right: 0; background: none; border: none; color: #fff; font-size: 36px; cursor: pointer; transition: all 0.3s ease; z-index: 10; padding: 8px;">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <!-- ডাউনলোড বাটন -->
+        <button onclick="downloadImage()" style="position: absolute; top: -50px; right: 60px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 10px 18px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; z-index: 10; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-download"></i> Download
+        </button>
+        
+        <!-- বড় ইমেজ -->
+        <img id="modalImage" src="" alt="Product Image" style="max-width: 100%; max-height: 85vh; object-fit: contain; border-radius: 8px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);">
+        
+        <!-- নেভিগেশন বাটন (থাম্বনেইল দিয়ে) -->
+        <div style="position: absolute; bottom: -70px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 40px; backdrop-filter: blur(4px);">
+            <button onclick="prevImage()" style="background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 4px 12px; transition: all 0.3s ease;">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <span id="modalCounter" style="color: #fff; font-size: 14px; font-weight: 500; min-width: 50px; text-align: center;">1/4</span>
+            <button onclick="nextImage()" style="background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 4px 12px; transition: all 0.3s ease;">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+    
+    <style>
+        @keyframes modalZoomIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .image-modal {
+            animation: modalFadeIn 0.3s ease forwards;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal-content-wrapper button:hover {
+            transform: scale(1.1);
+            background: rgba(255,255,255,0.25);
+        }
+        .modal-content-wrapper button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</div>
+
+<!-- ============================================================
+   মেইন কন্টেন্ট
+   ============================================================ -->
+<div class="container-fluid px-2 px-sm-3 py-3">
+    <div class="row g-3">
+        
+        <!-- ===== বাম পাশে: প্রফেশনাল গ্যালারি ===== -->
+        <div class="col-lg-5">
+            <div class="fk-card p-3" style="background: linear-gradient(145deg, #ffffff, #fafafa); border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.04);">
+                
+                <!-- মেইন গ্যালারি ভিউ (বড় ইমেজ) - ক্লিক করলে মডাল ওপেন -->
+                <div class="gallery-main position-relative" style="border-radius: 16px; overflow: hidden; background: #fff; border: 1px solid #e8e8e8; cursor: pointer;" onclick="openModal()">
+                    <div class="main-image-container" style="min-height: 420px; display: flex; align-items: center; justify-content: center; background: #ffffff; padding: 20px;">
+                        <img id="mainGalleryImage" 
+                             src="{% if product.get_image_url %}{{ product.get_image_url }}{% else %}data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='200' height='200' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-family='Arial' font-size='14' fill='%23999'%3ENo Image%3C/text%3E%3C/svg%3E{% endif %}" 
+                             alt="{{ product.name }}" 
+                             class="gallery-main-image"
+                             style="max-height: 420px; max-width: 100%; object-fit: contain; transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);">
+                    </div>
+                    
+                    <!-- জুম আইকন -->
+                    <div class="position-absolute top-50 start-50 translate-middle" style="z-index: 2; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;">
+                        <span style="background: rgba(0,0,0,0.6); color: #fff; padding: 12px 16px; border-radius: 50%; font-size: 24px; backdrop-filter: blur(4px);">
+                            <i class="fas fa-search-plus"></i>
+                        </span>
+                    </div>
+                    
+                    <!-- ইমেজ কাউন্টার -->
+                    <div class="position-absolute bottom-0 end-0 m-3" style="z-index: 5;">
+                        <span class="bg-dark bg-opacity-75 text-white px-3 py-1 rounded-pill" style="font-size: 12px; font-weight: 500; backdrop-filter: blur(4px);">
+                            <span id="current-slide">1</span> / <span id="total-slides">{{ product.images.all|length|add:1 }}</span>
+                        </span>
+                    </div>
+                    
+                    <!-- ডিসকাউন্ট ব্যাজ -->
+                    {% if product.discount_percentage > 0 %}
+                    <div class="position-absolute top-0 start-0 m-3" style="z-index: 10;">
+                        <span class="bg-danger text-white px-3 py-1 fw-700" style="font-size: 14px; border-radius: 8px; box-shadow: 0 4px 16px rgba(220, 53, 69, 0.35); animation: pulse 2s ease-in-out infinite;">
+                            🔥 {{ product.discount_percentage }}% OFF
+                        </span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if product.is_featured %}
+                    <div class="position-absolute top-0 end-0 m-3" style="z-index: 10;">
+                        <span class="bg-primary text-white px-3 py-1 fw-700" style="font-size: 12px; border-radius: 8px; box-shadow: 0 4px 16px rgba(40, 116, 240, 0.3);">
+                            ⭐ Featured
+                        </span>
+                    </div>
+                    {% endif %}
+                    
+                    <style>
+                        .gallery-main:hover .position-absolute.top-50 {
+                            opacity: 1 !important;
+                        }
+                        .gallery-main-image {
+                            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+                        }
+                        .gallery-main:hover .gallery-main-image {
+                            transform: scale(1.02) !important;
+                        }
+                        .main-image-container {
+                            background: #ffffff;
+                            min-height: 420px;
+                        }
+                        @media (max-width: 767.98px) {
+                            .main-image-container {
+                                min-height: 280px !important;
+                            }
+                            .gallery-main-image {
+                                max-height: 280px !important;
+                            }
+                        }
+                        @media (max-width: 575.98px) {
+                            .main-image-container {
+                                min-height: 220px !important;
+                            }
+                            .gallery-main-image {
+                                max-height: 220px !important;
+                            }
+                        }
+                        @media (min-width: 992px) {
+                            .main-image-container {
+                                min-height: 480px !important;
+                            }
+                            .gallery-main-image {
+                                max-height: 480px !important;
+                            }
+                        }
+                    </style>
+                </div>
+                
+                <!-- ===== থাম্বনেইল গ্যালারি ===== -->
+                <div class="row g-2 mt-3" id="thumbnailGallery" style="padding: 4px 0;">
+                    <!-- মেইন ইমেজ থাম্বনেইল -->
+                    <div class="col-3 thumbnail-item" onclick="changeMainImage('{{ product.get_image_url }}', 0)">
+                        <div class="border p-1 text-center cursor-pointer active-thumb" 
+                             style="border-color: #2874f0 !important; background: linear-gradient(145deg, #f0f7ff, #ffffff); border-radius: 12px; border-width: 2.5px !important; transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); cursor: pointer; box-shadow: 0 2px 8px rgba(40,116,240,0.12);">
+                            <img src="{% if product.get_image_url %}{{ product.get_image_url }}{% else %}data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect width='60' height='60' fill='%23f0f0f0'/%3E%3C/svg%3E{% endif %}" 
+                                 alt="Main" 
+                                 style="height: 70px; width: 100%; object-fit: contain; border-radius: 8px; transition: all 0.3s ease;">
+                        </div>
+                    </div>
+                    
+                    <!-- অতিরিক্ত ইমেজ থাম্বনেইল -->
+                    {% for image in product.images.all %}
+                    {% if image.get_image_url %}
+                    <div class="col-3 thumbnail-item" onclick="changeMainImage('{{ image.get_image_url }}', {{ forloop.counter }})">
+                        <div class="border p-1 text-center cursor-pointer" 
+                             style="border-color: transparent; background: #fafafa; border-radius: 12px; border-width: 2.5px !important; transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+                            <img src="{{ image.get_image_url }}" 
+                                 alt="Thumbnail {{ forloop.counter }}" 
+                                 style="height: 70px; width: 100%; object-fit: contain; border-radius: 8px; transition: all 0.3s ease;">
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                
+            </div>
+        </div>
+        
+        <!-- ===== ডান পাশে: প্রোডাক্ট ইনফো ===== -->
+        <div class="col-lg-7">
+            <div class="fk-card p-4">
+                
+                <!-- প্রোডাক্ট নাম -->
+                <h1 class="h3 fw-700 mb-2" style="font-size: 24px; line-height: 1.3; color: #212121;">{{ product.name }}</h1>
+                
+                <!-- ব্র্যান্ড & ক্যাটাগরি & স্টক -->
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% if product.brand %}
+                    <span class="badge bg-light text-dark" style="font-size: 12px; padding: 6px 14px; border-radius: 20px; border: 1px solid #e0e0e0;">
+                        <i class="fas fa-tag text-blue me-1"></i> {{ product.brand.name }}
+                    </span>
+                    {% endif %}
+                    {% if product.category %}
+                    <span class="badge bg-light text-dark" style="font-size: 12px; padding: 6px 14px; border-radius: 20px; border: 1px solid #e0e0e0;">
+                        <i class="fas fa-folder text-blue me-1"></i> {{ product.category.name }}
+                    </span>
+                    {% endif %}
+                    {% if product.in_stock %}
+                    <span class="badge bg-success" style="font-size: 12px; padding: 6px 14px; border-radius: 20px; font-weight: 500;">
+                        <i class="fas fa-check-circle me-1"></i> In Stock
+                    </span>
+                    {% else %}
+                    <span class="badge bg-danger" style="font-size: 12px; padding: 6px 14px; border-radius: 20px; font-weight: 500;">
+                        <i class="fas fa-times-circle me-1"></i> Out of Stock
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <!-- রেটিং -->
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="d-flex align-items-center">
+                        <span class="bg-success text-white px-2 py-1 fw-700 me-1" style="font-size: 14px; border-radius: 4px;">
+                            4.2 <i class="fas fa-star" style="font-size: 11px;"></i>
+                        </span>
+                        <span class="text-muted" style="font-size: 14px;">{{ product.reviews.all|length }} ratings</span>
+                    </div>
+                    <span class="text-muted">|</span>
+                    <span class="text-muted" style="font-size: 14px;">{{ product.reviews.all|length }} reviews</span>
+                </div>
+                
+                <!-- প্রাইস -->
+                <div class="mb-3">
+                    {% if product.old_price and product.old_price > product.price %}
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <span class="fw-700" style="font-size: 32px; color: #212121;">₹{{ product.price }}</span>
+                        <span class="text-muted text-decoration-line-through" style="font-size: 20px;">₹{{ product.old_price }}</span>
+                        <span class="text-success fw-700" style="font-size: 18px; background: #e8f5e9; padding: 2px 14px; border-radius: 20px;">{{ product.discount_percentage }}% off</span>
+                    </div>
+                    <p class="text-muted mb-0" style="font-size: 14px; margin-top: 4px;">
+                        <i class="fas fa-tag text-blue me-1"></i> You save ₹{{ product.old_price|add:product.price|cut:"-" }}
+                    </p>
+                    {% else %}
+                    <span class="fw-700" style="font-size: 32px; color: #212121;">₹{{ product.price }}</span>
+                    {% endif %}
+                </div>
+                
+                <!-- অফার -->
+                <div class="bg-light p-3 mb-3" style="border-left: 4px solid #fb641b; border-radius: 8px;">
+                    <p class="mb-0" style="font-size: 13px;">
+                        <i class="fas fa-tag text-orange me-2"></i>
+                        <span class="fw-600">Available offers:</span>
+                    </p>
+                    <ul class="mb-0 ps-3" style="font-size: 13px; list-style: none;">
+                        <li><i class="fas fa-check-circle text-green me-2"></i> 10% Instant Discount on bKash</li>
+                        <li><i class="fas fa-check-circle text-green me-2"></i> Free Shipping on orders above ₹1000</li>
+                        <li><i class="fas fa-check-circle text-green me-2"></i> Cash on Delivery available</li>
+                    </ul>
+                </div>
+                
+                <!-- ডেলিভারি & রিটার্ন -->
+                <div class="mb-3">
+                    <p class="mb-1" style="font-size: 14px;">
+                        <i class="fas fa-truck me-2 text-blue"></i>
+                        <span class="fw-600">Delivery:</span>
+                        <span class="text-muted">Free delivery by <span class="fw-600 text-dark">Tomorrow</span></span>
+                    </p>
+                    <p class="mb-0" style="font-size: 14px;">
+                        <i class="fas fa-undo me-2 text-blue"></i>
+                        <span class="fw-600">Returns:</span>
+                        <span class="text-muted">30 days easy return policy</span>
+                    </p>
+                </div>
+                
+                <!-- ===== অ্যাকশন বাটন ===== -->
+                {% if product.in_stock %}
+                <div class="row g-2 mb-3">
+                    
+                    <!-- কোয়ান্টিটি সেকশন -->
+                    <div class="col-12 mb-2">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <span class="fw-600" style="font-size: 14px;">Quantity:</span>
+                    <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-outline-secondary" 
+                    onclick="updateQuantity('decrease')" 
+                    style="padding: 8px 18px; border-radius: 8px; font-weight: 600; min-width: 44px; min-height: 44px; font-size: 18px;">
+                    <i class="fas fa-minus"></i>
+                    </button>
+                    <span id="qty-display" class="fw-700 text-center" 
+                  style="min-width: 48px; font-size: 22px; transition: all 0.3s ease;">1</span>
+                    <button type="button" class="btn btn-outline-secondary" 
+                    onclick="updateQuantity('increase')" 
+                    style="padding: 8px 18px; border-radius: 8px; font-weight: 600; min-width: 44px; min-height: 44px; font-size: 18px;">
+                    <i class="fas fa-plus"></i>
+                    </button>
+                    </div>
+                      <span class="text-muted" style="font-size: 13px;">({{ product.stock }} available)</span>
+                  </div>
+                </div>
+                    
+                    <!-- Add to Cart -->
+                    <div class="col-12 col-md-6">
+                    <form id="add-to-cart-form" method="post" action="{% url 'cart:cart_add' product_id=product.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" id="quantity-input" value="1">
+                    <input type="hidden" name="next" value="product_detail">
+                    <button type="submit" class="btn fk-btn-orange w-100 add-to-cart-btn" 
+                    style="font-size: 17px; font-weight: 600; border-radius: 10px; padding: 16px 20px; min-height: 56px;">
+                    <i class="fas fa-shopping-cart me-2"></i> Add to Cart
+                 </button>
+            </form>
+          </div>
+                    
+                    <!-- Buy Now -->
+                    <div class="col-12 col-md-6">
+                        <a href="{% url 'cart:cart_detail' %}" class="btn fk-btn-primary w-100 buy-now-btn" style="font-size: 17px; font-weight: 600; border-radius: 10px; padding: 16px 20px; transition: all 0.3s ease; min-height: 56px; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-bolt me-2"></i> Buy Now
+                        </a>
+                    </div>
+                    
+                    <!-- Wishlist -->
+                    <div class="col-12">
+                        <button class="btn btn-outline-danger w-100 wishlist-btn-main" 
+                                data-product-id="{{ product.id }}" 
+                                style="font-size: 16px; font-weight: 600; border-radius: 10px; padding: 14px 20px; border: 2px solid {% if in_wishlist %}#dc3545{% else %}#e0e0e0{% endif %}; background: {% if in_wishlist %}#dc3545{% else %}transparent{% endif %}; color: {% if in_wishlist %}#fff{% else %}#212121{% endif %}; transition: all 0.3s ease; min-height: 50px;">
+                            <i class="{% if in_wishlist %}fas{% else %}far{% endif %} fa-heart me-2"></i>
+                            {% if in_wishlist %}❤️ Wishlisted{% else %}🤍 Add to Wishlist{% endif %}
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- বিবরণ -->
+                <div class="mt-3">
+                    <h5 class="fw-700 mb-2" style="font-size: 16px; border-bottom: 2px solid #2874f0; padding-bottom: 8px; display: inline-block;">Product Description</h5>
+                    <div class="text-muted" style="font-size: 14px; line-height: 1.8; margin-top: 12px;">
+                        {{ product.description|linebreaks|default:"No description available." }}
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+   রিলেটেড প্রোডাক্ট
+   ============================================================ -->
+{% if related_products %}
+<div class="container-fluid px-2 px-sm-3 mt-3">
+    <div class="fk-card">
+        <div class="fk-card-header d-flex justify-content-between align-items-center">
+            <span style="font-size: 18px; font-weight: 700;">You May Also Like</span>
+            <a href="{% url 'products:product_list' %}" class="text-blue text-decoration-none fw-500" style="font-size: 14px;">
+                View All <i class="fas fa-chevron-right ms-1" style="font-size: 10px;"></i>
+            </a>
+        </div>
+        <div class="row g-3">
+            {% for related in related_products %}
+            <div class="col-6 col-md-3">
+                <div class="fk-product-card">
+                    <div class="product-image" style="height: 160px; position: relative;">
+                        {% if related.get_image_url %}
+                        <img src="{{ related.get_image_url }}" alt="{{ related.name }}" loading="lazy">
+                        {% else %}
+                        <i class="fas fa-image fa-3x text-muted"></i>
+                        {% endif %}
+                        {% if related.discount_percentage > 0 %}
+                        <span class="fk-discount-tag">{{ related.discount_percentage }}% OFF</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-body">
+                        <div class="product-title">{{ related.name|truncatechars:25 }}</div>
+                        <div class="product-price">₹{{ related.price }}</div>
+                    </div>
+                    <div class="product-footer">
+                        <a href="{% url 'products:product_detail' related.id %}" class="btn fk-btn-outline btn-sm w-100" style="font-size: 12px; border-radius: 6px;">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ============================================================
+   রিভিউ সেকশন (এনিমেশন সহ)
+   ============================================================ -->
+<div class="container-fluid px-2 px-sm-3 mt-3">
+    <div class="fk-card">
+        <div class="fk-card-header d-flex justify-content-between align-items-center flex-wrap">
+            <span style="font-size: 18px; font-weight: 700;">Customer Reviews</span>
+            {% if user.is_authenticated %}
+            <a href="{% url 'reviews:submit_review' product.id %}" class="btn fk-btn-primary btn-sm" style="font-size: 13px; border-radius: 6px;">
+                <i class="fas fa-edit me-1"></i> Write a Review
+            </a>
+            {% else %}
+            <a href="{% url 'accounts:login' %}?next={% url 'reviews:submit_review' product.id %}" class="btn fk-btn-outline btn-sm" style="font-size: 13px; border-radius: 6px;">
+                <i class="fas fa-sign-in-alt me-1"></i> Login to Review
+            </a>
+            {% endif %}
+        </div>
+        
+        <div class="row g-3 mb-3">
+            <div class="col-md-3 text-center border-end">
+                <div class="display-4 fw-700 text-success" style="font-size: 42px; animation: countUp 1s ease forwards;">4.2</div>
+                <div class="text-warning" style="font-size: 22px;">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star-half-alt"></i>
+                </div>
+                <p class="text-muted mb-0" style="font-size: 14px;">{{ product.reviews.all|length }} reviews</p>
+            </div>
+            <div class="col-md-9">
+                <!-- রিভিউ বার - এনিমেশন সহ -->
+                <div class="review-bar" style="animation: slideInLeft 0.6s ease forwards; opacity: 0;">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="font-size: 13px; min-width: 60px;">5 ★</span>
+                        <div class="flex-grow-1 bg-light" style="height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div class="bg-success" style="height: 100%; width: 0%; border-radius: 4px; animation: progressBar 1.2s ease forwards 0.2s; animation-delay: 0.2s;"></div>
+                        </div>
+                        <span style="font-size: 13px; min-width: 40px;">60%</span>
+                    </div>
+                </div>
+                <div class="review-bar" style="animation: slideInLeft 0.6s ease forwards 0.15s; opacity: 0;">
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                        <span style="font-size: 13px; min-width: 60px;">4 ★</span>
+                        <div class="flex-grow-1 bg-light" style="height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div class="bg-success" style="height: 100%; width: 0%; border-radius: 4px; animation: progressBar 1.2s ease forwards 0.35s; animation-delay: 0.35s;"></div>
+                        </div>
+                        <span style="font-size: 13px; min-width: 40px;">25%</span>
+                    </div>
+                </div>
+                <div class="review-bar" style="animation: slideInLeft 0.6s ease forwards 0.3s; opacity: 0;">
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                        <span style="font-size: 13px; min-width: 60px;">3 ★</span>
+                        <div class="flex-grow-1 bg-light" style="height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div class="bg-warning" style="height: 100%; width: 0%; border-radius: 4px; animation: progressBar 1.2s ease forwards 0.5s; animation-delay: 0.5s;"></div>
+                        </div>
+                        <span style="font-size: 13px; min-width: 40px;">10%</span>
+                    </div>
+                </div>
+                <div class="review-bar" style="animation: slideInLeft 0.6s ease forwards 0.45s; opacity: 0;">
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                        <span style="font-size: 13px; min-width: 60px;">2 ★</span>
+                        <div class="flex-grow-1 bg-light" style="height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div class="bg-danger" style="height: 100%; width: 0%; border-radius: 4px; animation: progressBar 1.2s ease forwards 0.65s; animation-delay: 0.65s;"></div>
+                        </div>
+                        <span style="font-size: 13px; min-width: 40px;">3%</span>
+                    </div>
+                </div>
+                <div class="review-bar" style="animation: slideInLeft 0.6s ease forwards 0.6s; opacity: 0;">
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                        <span style="font-size: 13px; min-width: 60px;">1 ★</span>
+                        <div class="flex-grow-1 bg-light" style="height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div class="bg-danger" style="height: 100%; width: 0%; border-radius: 4px; animation: progressBar 1.2s ease forwards 0.8s; animation-delay: 0.8s;"></div>
+                        </div>
+                        <span style="font-size: 13px; min-width: 40px;">2%</span>
+                    </div>
+                </div>
+                
+                <style>
+                    @keyframes progressBar {
+                        from { width: 0%; }
+                        to { width: var(--progress-width, 0%); }
+                    }
+                    @keyframes slideInLeft {
+                        from { opacity: 0; transform: translateX(-20px); }
+                        to { opacity: 1; transform: translateX(0); }
+                    }
+                    @keyframes countUp {
+                        from { opacity: 0; transform: scale(0.8); }
+                        to { opacity: 1; transform: scale(1); }
+                    }
+                    .review-bar:nth-child(1) .bg-success { --progress-width: 60%; }
+                    .review-bar:nth-child(2) .bg-success { --progress-width: 25%; }
+                    .review-bar:nth-child(3) .bg-warning { --progress-width: 10%; }
+                    .review-bar:nth-child(4) .bg-danger { --progress-width: 3%; }
+                    .review-bar:nth-child(5) .bg-danger { --progress-width: 2%; }
+                </style>
+            </div>
+        </div>
+        
+        {% if product.reviews.all %}
+        <div id="reviews">
+            {% for review in product.reviews.all|slice:":5" %}
+            <div class="border-top pt-3 mt-3" style="animation: slideInLeft 0.5s ease forwards {{ forloop.counter|add:1|divisibleby:2|yesno:"0.1,0.2" }}s; opacity: 0;">
+                <div class="d-flex justify-content-between mb-2">
+                    <div>
+                        <strong class="fw-600" style="font-size: 14px;">{{ review.user.username }}</strong>
+                        <div class="text-warning" style="font-size: 14px;">
+                            {% for i in "12345"|make_list %}
+                            <i class="fas fa-star {% if forloop.counter <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <small class="text-muted" style="font-size: 12px;">{{ review.created_at|date:"F d, Y" }}</small>
+                </div>
+                <p class="mb-0" style="font-size: 14px; color: #212121;">{{ review.comment }}</p>
+            </div>
+            {% endfor %}
+            
+            {% if product.reviews.count > 5 %}
+            <div class="text-center mt-3">
+                <a href="#" class="text-blue text-decoration-none fw-500" style="font-size: 14px;">
+                    View All {{ product.reviews.count }} Reviews <i class="fas fa-chevron-right ms-1" style="font-size: 10px;"></i>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-comments text-muted" style="font-size: 48px; opacity: 0.3;"></i>
+            <h6 class="fw-700 mt-3" style="font-size: 16px;">No Reviews Yet</h6>
+            <p class="text-muted" style="font-size: 14px;">Be the first to review this product!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ============================================================
+   স্টাইল ওভাররাইড
+   ============================================================ -->
+<style>
+    /* ===== কীফ্রেম অ্যানিমেশন ===== */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    /* ===== টপ বার ===== */
+    .fk-detail-topbar {
+        background: #fff;
+        padding: 12px 16px;
+        border-bottom: 1px solid #f0f0f0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        animation: slideDown 0.4s ease;
+    }
+    
+    .fk-detail-topbar .back-btn {
+        color: #2874f0;
+        font-size: 20px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .fk-detail-topbar .back-btn:hover {
+        color: #1a5bc7;
+    }
+    .fk-detail-topbar .back-btn:hover i {
+        transform: translateX(-4px);
+    }
+    .fk-detail-topbar .back-btn i {
+        transition: transform 0.3s ease;
+    }
+    
+    .fk-detail-topbar h1 {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+        color: #212121;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* ===== থাম্বনেইল ===== */
+    .thumbnail-item .cursor-pointer {
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .thumbnail-item .cursor-pointer:hover {
+        border-color: #2874f0 !important;
+        background: linear-gradient(145deg, #f0f7ff, #ffffff) !important;
+        transform: scale(1.05);
+        box-shadow: 0 4px 16px rgba(40,116,240,0.15);
+    }
+    
+    .thumbnail-item .cursor-pointer:hover img {
+        transform: scale(1.08);
+    }
+    
+    .thumbnail-item .active-thumb {
+        border-color: #2874f0 !important;
+        border-width: 2.5px !important;
+        box-shadow: 0 0 0 3px rgba(40, 116, 240, 0.12), 0 4px 16px rgba(40,116,240,0.15);
+        background: linear-gradient(145deg, #f0f7ff, #ffffff) !important;
+        transform: scale(1.02);
+    }
+    
+    .thumbnail-item .active-thumb img {
+        transform: scale(1.05);
+    }
+    
+    .thumbnail-item .cursor-pointer img {
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    
+    /* ===== কার্ড ===== */
+    .fk-card {
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+        background: #fff;
+        position: relative;
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+    }
+    
+    .fk-card:hover {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
+    }
+    
+    .fk-card-header {
+        border-bottom: 1px solid #f0f0f0;
+        padding-bottom: 12px;
+        margin-bottom: 14px;
+    }
+    
+    /* ===== প্রোডাক্ট কার্ড ===== */
+    .fk-product-card {
+        border-radius: 10px;
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        overflow: hidden;
+        height: 100%;
+        background: #fff;
+    }
+    
+    .fk-product-card:hover {
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        transform: translateY(-4px);
+        border-color: #2874f0;
+    }
+    
+    .fk-product-card .product-image {
+        height: 160px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        padding: 12px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .fk-product-card .product-image img {
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;
+        transition: transform 0.4s ease;
+    }
+    
+    .fk-product-card:hover .product-image img {
+        transform: scale(1.04);
+    }
+    
+    .fk-product-card .product-body {
+        padding: 10px 12px 12px;
+    }
+    
+    .fk-product-card .product-title {
+        font-size: 13px;
+        font-weight: 500;
+        height: 36px;
+        line-height: 1.3;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        transition: color 0.3s ease;
+    }
+    
+    .fk-product-card:hover .product-title {
+        color: #2874f0;
+    }
+    
+    .fk-product-card .product-price {
+        font-size: 16px;
+        font-weight: 700;
+        color: #212121;
+    }
+    
+    .fk-product-card .product-footer {
+        padding: 8px 12px 12px;
+        border-top: 1px solid #f0f0f0;
+    }
+    
+    /* ===== বাটন ===== */
+    .fk-btn-primary, .fk-btn-orange, .fk-btn-outline {
+        border-radius: 10px !important;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    
+    .fk-btn-primary:hover, .fk-btn-orange:hover, .fk-btn-outline:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    .fk-btn-orange {
+        background: linear-gradient(135deg, #fb641b, #f57c00);
+        border: none;
+        color: #fff;
+    }
+    
+    .fk-btn-orange:hover {
+        background: linear-gradient(135deg, #e85a0e, #e65100);
+    }
+    
+    .fk-btn-primary {
+        background: linear-gradient(135deg, #2874f0, #1a5bc7);
+        border: none;
+        color: #fff;
+    }
+    
+    .fk-btn-primary:hover {
+        background: linear-gradient(135deg, #1a5bc7, #0d47a1);
+    }
+    
+    .buy-now-btn {
+        background: linear-gradient(135deg, #ff6f00, #e65100) !important;
+        border: none !important;
+        color: #fff !important;
+    }
+    
+    .buy-now-btn:hover {
+        background: linear-gradient(135deg, #e65100, #bf360c) !important;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 20px rgba(230, 81, 0, 0.3);
+    }
+    
+    /* ===== ডিসকাউন্ট ব্যাজ ===== */
+    .fk-discount-tag {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: linear-gradient(135deg, #fb641b, #f57c00);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 12px;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(251, 100, 27, 0.3);
+        z-index: 2;
+    }
+    
+    /* ===== মোবাইল রেস্পন্সিভ ===== */
+    @media (max-width: 767.98px) {
+        .fk-detail-topbar h1 {
+            font-size: 14px !important;
+        }
+        .fk-card .p-4 {
+            padding: 16px !important;
+        }
+        .fw-700[style*="font-size: 32px"] {
+            font-size: 24px !important;
+        }
+        .fk-product-card .product-image {
+            height: 130px !important;
+        }
+        .display-4 {
+            font-size: 32px !important;
+        }
+        .fk-btn-orange, .fk-btn-primary, .buy-now-btn {
+            font-size: 15px !important;
+            padding: 14px 16px !important;
+            min-height: 48px !important;
+        }
+        .thumbnail-item .cursor-pointer img {
+            height: 60px !important;
+        }
+    }
+    
+    @media (max-width: 575.98px) {
+        .fw-700[style*="font-size: 32px"] {
+            font-size: 20px !important;
+        }
+        .fk-product-card .product-image {
+            height: 110px !important;
+        }
+        .fk-product-card .product-title {
+            font-size: 12px !important;
+            height: 32px;
+        }
+        .fk-product-card .product-price {
+            font-size: 14px !important;
+        }
+        .fk-detail-topbar .back-btn span {
+            display: none !important;
+        }
+        .row.g-2 > [class*="col-"] {
+            padding-right: 4px;
+            padding-left: 4px;
+        }
+        .fk-btn-orange, .fk-btn-primary, .buy-now-btn {
+            font-size: 14px !important;
+            padding: 12px 14px !important;
+            min-height: 44px !important;
+        }
+        .thumbnail-item .cursor-pointer img {
+            height: 50px !important;
+        }
+        .thumbnail-item {
+            padding: 0 4px !important;
+        }
+    }
+    
+    @media (min-width: 992px) {
+        .fk-btn-orange, .fk-btn-primary, .buy-now-btn {
+            font-size: 18px !important;
+            padding: 18px 24px !important;
+            min-height: 60px !important;
+        }
+        .thumbnail-item .cursor-pointer img {
+            height: 80px !important;
+        }
+    }
+</style>
+
+<!-- ============================================================
+   জাভাস্ক্রিপ্ট - সম্পূর্ণ আপডেটেড
+   ============================================================ -->
+{% block extra_js %}
+<script>
+    
+    // ============================================================
+    // কোয়ান্টিটি ইনক্রিমেন্ট/ডিক্রিমেন্ট
+    // ============================================================
+    function updateQuantity(action) {
+        const display = document.getElementById('qty-display');
+        const input = document.getElementById('quantity-input');
+        const maxStock = parseInt("{{ product.stock }}") || 99;
+        
+        if (!display) return;
+        let current = parseInt(display.textContent, 10) || 1;
+        
+        if (action === 'increase') {
+            if (current < maxStock) {
+                current++;
+                display.textContent = current;
+                if (input) input.value = current;
+            } else {
+                showToast('⚠️ Maximum stock available: ' + maxStock, 'warning');
+            }
+        } else if (action === 'decrease') {
+            if (current > 1) {
+                current--;
+                display.textContent = current;
+                if (input) input.value = current;
+            }
+        }
+    }
+
+    // ============================================================
+    // সম্পূর্ণ জাভাস্ক্রিপ্ট - লাইটবক্স গ্যালারি + অ্যানিমেশন
+    // ============================================================
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('✅ Product Detail Page Loaded');
+        
+        // ============================================================
+        // ১. গ্যালারি ইমেজ চেইঞ্জ ফাংশন
+        // ============================================================
+        window.changeMainImage = function(imageUrl, index) {
+            console.log('Changing image to:', imageUrl, 'Index:', index);
+            
+            // মেইন ইমেজ আপডেট
+            const mainImage = document.getElementById('mainGalleryImage');
+            if (mainImage && imageUrl) {
+                mainImage.src = imageUrl;
+                mainImage.style.animation = 'none';
+                void mainImage.offsetHeight;
+                mainImage.style.animation = 'galleryFadeIn 0.4s ease forwards';
+            }
+            
+            // কাউন্টার আপডেট
+            const currentSlide = document.getElementById('current-slide');
+            if (currentSlide) {
+                currentSlide.textContent = index + 1;
+            }
+            
+            // থাম্বনেইল আপডেট
+            updateThumbnails(index);
+            
+            // মডাল ইমেজ আপডেট (যদি মডাল খোলা থাকে)
+            const modalImage = document.getElementById('modalImage');
+            if (modalImage && document.getElementById('imageModal').style.display === 'flex') {
+                modalImage.src = imageUrl;
+                document.getElementById('modalCounter').textContent = (index + 1) + '/' + document.getElementById('total-slides').textContent;
+            }
+            
+            // বর্তমান ইন্ডেক্স সংরক্ষণ
+            window.currentImageIndex = index;
+        };
+        
+        // ============================================================
+        // ২. থাম্বনেইল আপডেট ফাংশন
+        // ============================================================
+        window.updateThumbnails = function(activeIndex) {
+            const thumbItems = document.querySelectorAll('.thumbnail-item .cursor-pointer');
+            thumbItems.forEach((el, i) => {
+                if (i === activeIndex) {
+                    el.style.borderColor = '#2874f0';
+                    el.style.borderWidth = '2.5px';
+                    el.classList.add('active-thumb');
+                    el.style.background = 'linear-gradient(145deg, #f0f7ff, #ffffff)';
+                    el.style.boxShadow = '0 0 0 3px rgba(40,116,240,0.12), 0 4px 16px rgba(40,116,240,0.15)';
+                    el.style.transform = 'scale(1.02)';
+                } else {
+                    el.style.borderColor = 'transparent';
+                    el.style.borderWidth = '2.5px';
+                    el.classList.remove('active-thumb');
+                    el.style.background = '#fafafa';
+                    el.style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)';
+                    el.style.transform = 'scale(1)';
+                }
+            });
+        };
+        
+        // ============================================================
+        // ৩. মডাল/লাইটবক্স ফাংশন
+        // ============================================================
+        window.currentImageIndex = 0;
+        const imageUrls = [];
+        
+        // সব ইমেজ URL সংগ্রহ
+        document.querySelectorAll('.thumbnail-item img').forEach(img => {
+            if (img.src) imageUrls.push(img.src);
+        });
+        if (imageUrls.length === 0 && document.getElementById('mainGalleryImage')) {
+            imageUrls.push(document.getElementById('mainGalleryImage').src);
+        }
+        
+        window.openModal = function() {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const mainImage = document.getElementById('mainGalleryImage');
+            
+            if (modalImage && mainImage) {
+                modalImage.src = mainImage.src;
+                const total = document.getElementById('total-slides').textContent;
+                const current = document.getElementById('current-slide').textContent;
+                document.getElementById('modalCounter').textContent = current + '/' + total;
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                
+                // ইন্ডেক্স আপডেট
+                window.currentImageIndex = parseInt(current) - 1 || 0;
+            }
+        };
+        
+        window.closeModal = function() {
+            document.getElementById('imageModal').style.display = 'none';
+            document.body.style.overflow = '';
+        };
+        
+        window.nextImage = function() {
+            const total = imageUrls.length;
+            if (total === 0) return;
+            window.currentImageIndex = (window.currentImageIndex + 1) % total;
+            const url = imageUrls[window.currentImageIndex];
+            changeMainImage(url, window.currentImageIndex);
+            
+            // মডাল ইমেজ আপডেট
+            document.getElementById('modalImage').src = url;
+            document.getElementById('modalCounter').textContent = (window.currentImageIndex + 1) + '/' + total;
+        };
+        
+        window.prevImage = function() {
+            const total = imageUrls.length;
+            if (total === 0) return;
+            window.currentImageIndex = (window.currentImageIndex - 1 + total) % total;
+            const url = imageUrls[window.currentImageIndex];
+            changeMainImage(url, window.currentImageIndex);
+            
+            // মডাল ইমেজ আপডেট
+            document.getElementById('modalImage').src = url;
+            document.getElementById('modalCounter').textContent = (window.currentImageIndex + 1) + '/' + total;
+        };
+        
+        // ============================================================
+        // ৪. ডাউনলোড ফাংশন
+        // ============================================================
+        window.downloadImage = function() {
+            const modalImage = document.getElementById('modalImage');
+            if (modalImage && modalImage.src) {
+                fetch(modalImage.src)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'product-image-' + Date.now() + '.jpg';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        showToast('✅ Image downloaded successfully!', 'success');
+                    })
+                    .catch(() => {
+                        // Fallback: ডাউনলোড না হলে সরাসরি লিংক খুলে
+                        window.open(modalImage.src, '_blank');
+                        showToast('✅ Image opened in new tab', 'info');
+                    });
+            } else {
+                showToast('❌ No image to download', 'error');
+            }
+        };
+        
+        // ============================================================
+        // ৫. কিবোর্ড শর্টকাট
+        // ============================================================
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('imageModal').style.display === 'flex') {
+                if (e.key === 'Escape') closeModal();
+                if (e.key === 'ArrowRight') nextImage();
+                if (e.key === 'ArrowLeft') prevImage();
+            }
+        });
+        
+        // মডালের বাইরে ক্লিক করলে বন্ধ
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+        
+        // ============================================================
+        // ৬. উইশলিস্ট টগল (FIXED)
+        // ============================================================
+        function toggleWishlist(productId, button) {
+            const originalHTML = button.innerHTML;
+            
+            button.disabled = true;
+            button.style.transform = 'scale(0.92)';
+            
+            fetch(`/wishlist/toggle/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Server error');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const mainBtn = document.querySelector('.wishlist-btn-main');
+                    const topBtn = document.querySelector('.wishlist-btn-top');
+                    
+                    if (data.in_wishlist) {
+                        if (mainBtn) {
+                            mainBtn.innerHTML = '<i class="fas fa-heart me-2"></i> ❤️ Wishlisted';
+                            mainBtn.style.background = '#dc3545';
+                            mainBtn.style.color = '#fff';
+                            mainBtn.style.borderColor = '#dc3545';
+                        }
+                        if (topBtn) {
+                            topBtn.innerHTML = '<i class="fas fa-heart"></i>';
+                            topBtn.style.background = '#dc3545';
+                            topBtn.style.color = '#fff';
+                            topBtn.style.borderColor = '#dc3545';
+                        }
+                        showToast('❤️ Added to wishlist!', 'success');
+                    } else {
+                        if (mainBtn) {
+                            mainBtn.innerHTML = '<i class="far fa-heart me-2"></i> 🤍 Add to Wishlist';
+                            mainBtn.style.background = 'transparent';
+                            mainBtn.style.color = '#212121';
+                            mainBtn.style.borderColor = '#e0e0e0';
+                        }
+                        if (topBtn) {
+                            topBtn.innerHTML = '<i class="far fa-heart"></i>';
+                            topBtn.style.background = 'transparent';
+                            topBtn.style.color = '#212121';
+                            topBtn.style.borderColor = '#e0e0e0';
+                        }
+                        showToast('💔 Removed from wishlist', 'info');
+                    }
+                    
+                    button.style.transform = 'scale(1.05)';
+                    setTimeout(() => button.style.transform = 'scale(1)', 300);
+                } else {
+                    showToast('❌ ' + (data.message || 'Something went wrong'), 'error');
+                    button.innerHTML = originalHTML;
+                    button.style.transform = 'scale(1)';
+                }
+            })
+            .catch(error => {
+                console.error('Wishlist error:', error);
+                showToast('❌ ' + error.message, 'error');
+                button.innerHTML = originalHTML;
+                button.style.transform = 'scale(1)';
+            })
+            .finally(() => {
+                button.disabled = false;
+            });
+        }
+        
+        document.querySelectorAll('.wishlist-btn-main, .wishlist-btn-top').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const productId = this.dataset.productId;
+                if (productId) {
+                    toggleWishlist(productId, this);
+                }
+            });
+        });
+        
+        // ============================================================
+        // ৭. কোয়ান্টিটি কন্ট্রোল
+        // ============================================================
+        window.increaseQuantity = function(maxStock) {
+            const display = document.getElementById('qty-display');
+            const input = document.getElementById('quantity-input');
+            let current = parseInt(display.textContent, 10) || 1;
+            if (current < maxStock) {
+                current++;
+                display.textContent = current;
+                if (input) input.value = current;
+            } else {
+                showToast('⚠️ Maximum stock available: ' + maxStock, 'warning');
+            }
+        };
+        
+        window.decreaseQuantity = function() {
+            const display = document.getElementById('qty-display');
+            const input = document.getElementById('quantity-input');
+            let current = parseInt(display.textContent, 10) || 1;
+            if (current > 1) {
+                current--;
+                display.textContent = current;
+                if (input) input.value = current;
+            }
+        };
+        
+        // ============================================================
+        // ৮. টোস্ট মেসেজ ফাংশন
+        // ============================================================
+        window.showToast = function(message, type = 'success') {
+            const existing = document.querySelector('.fk-toast-message');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'fk-toast-message';
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 12px 24px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                font-size: 14px;
+                z-index: 99999;
+                background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : type === 'warning' ? '#ffc107' : '#17a2b8'};
+                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+                animation: slideUp 0.3s ease;
+                max-width: 90%;
+                text-align: center;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+        
+        // ============================================================
+        // ৯. শেয়ার ফাংশন
+        // ============================================================
+        window.openShareModal = function() {
+            document.getElementById('shareModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        };
+        
+        window.closeShareModal = function() {
+            document.getElementById('shareModal').style.display = 'none';
+            document.body.style.overflow = '';
+        };
+        
+        document.getElementById('shareModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeShareModal();
+            }
+        });
+        
+        window.shareOnFacebook = function(name, image, url) {
+            const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent('🛍️ Check out ' + name + ' on Flipkart!')}`;
+            window.open(shareUrl, '_blank', 'width=600,height=500');
+            closeShareModal();
+            return false;
+        };
+        
+        window.shareOnWhatsApp = function(name, url) {
+            const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent('🛍️ ' + name + '\n\nCheck it out: ' + url)}`;
+            window.open(shareUrl, '_blank');
+            closeShareModal();
+            return false;
+        };
+        
+        window.shareOnTelegram = function(name, url) {
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent('🛍️ ' + name)}`;
+            window.open(shareUrl, '_blank');
+            closeShareModal();
+            return false;
+        };
+        
+        window.shareOnTwitter = function(name, url) {
+            const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent('🛍️ ' + name + ' - Check it out on Flipkart!')}&url=${encodeURIComponent(url)}`;
+            window.open(shareUrl, '_blank', 'width=600,height=500');
+            closeShareModal();
+            return false;
+        };
+        
+        window.shareOnInstagram = function(name, url) {
+            const text = `🛍️ ${name}\n\nCheck it out: ${url}`;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ Link copied!', 'success');
+                closeShareModal();
+            }).catch(() => {
+                showToast('❌ Failed to copy', 'error');
+            });
+            return false;
+        };
+        
+        window.copyProductLink = function(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('✅ Link copied!', 'success');
+                closeShareModal();
+            }).catch(() => {
+                showToast('❌ Failed to copy', 'error');
+            });
+        };
+        
+        console.log('✅ All features loaded successfully!');
+    });
+</script>
+{% endblock %}
+{% endblock %}

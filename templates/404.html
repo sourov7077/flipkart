@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}404 - Page Not Found{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center">
+        <div style="font-size: 80px; color: #2874f0; font-weight: 700;">404</div>
+        <h1 class="fw-700 mt-3" style="font-size: 28px;">Oops! Page Not Found</h1>
+        <p class="text-muted" style="font-size: 16px; max-width: 500px; margin: 10px auto;">
+            The page you're looking for doesn't exist or has been moved.
+        </p>
+        <div class="mt-4">
+            <a href="{% url 'home:home' %}" class="btn fk-btn-primary px-5 py-2">
+                <i class="fas fa-home me-2"></i> Go Home
+            </a>
+            <a href="javascript:history.back()" class="btn btn-outline-secondary px-5 py-2 ms-2">
+                <i class="fas fa-arrow-left me-2"></i> Go Back
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
