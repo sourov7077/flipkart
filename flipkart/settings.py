@@ -160,6 +160,9 @@ LOGIN_REDIRECT_URL = 'home:home'
 LOGOUT_REDIRECT_URL = 'home:home'
 CART_SESSION_ID = 'cart'
 
+
+USE_X_FORWARDED_HOST = False
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # ============================================================
 # 🚀 FINAL STATUS
 # ============================================================
