@@ -1,50 +1,29 @@
-"""
-Django settings - Production Ready (Simple & Effective)
-"""
-
 import os
 from pathlib import Path
-from decouple import config
 import dj_database_url
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ============================================================
-# 🔐 SECURITY
-# ============================================================
-
 SECRET_KEY = config('SECRET_KEY')
-
 DEBUG = config('DEBUG', default=False, cast=bool)
-
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in config('ALLOWED_HOSTS', default='127.0.0.1,localhost')
-    .replace(" ", "")
-    .split(",")
-    if host.strip()
-]
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,flipkart.ondigitalocean.app').split(',')
 
 CSRF_TRUSTED_ORIGINS = [
-    f"http://{host}" for host in ALLOWED_HOSTS if host not in ["localhost", "127.0.0.1"]
+    'https://flipkart.ondigitalocean.app',
+    'http://flipkart.ondigitalocean.app',
 ]
-
-# ============================================================
-# 📦 APPS
-# ============================================================
 
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'whitenoise.runserver_nostatic',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'whitenoise.runserver_nostatic',
     'crispy_forms',
     'crispy_bootstrap5',
-
     'home',
     'accounts',
     'products',
@@ -55,34 +34,22 @@ INSTALLED_APPS = [
     'reviews',
 ]
 
-# ============================================================
-# 🔧 MIDDLEWARE
-# ============================================================
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# ============================================================
-# 🌐 URL
-# ============================================================
-
 ROOT_URLCONF = 'flipkart.urls'
 WSGI_APPLICATION = 'flipkart.wsgi.application'
-
-# ============================================================
-# 📁 TEMPLATES
-# ============================================================
 
 TEMPLATES = [
     {
@@ -102,19 +69,31 @@ TEMPLATES = [
 ]
 
 # ============================================================
-# 🗄️ DATABASE
+# 🗄️ DATABASE - লোকাল ও প্রোডাকশন একসাথে
 # ============================================================
+DATABASE_URL = config('DATABASE_URL', default=None)
 
-DATABASES = {
-    'default': dj_database_url.parse(
-        config('DATABASE_URL'),
-        conn_max_age=600
-    )
-}
-
-# ============================================================
-# 🔑 AUTH
-# ============================================================
+if DATABASE_URL:
+    # ✅ App Platform (Production)
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=False
+        )
+    }
+else:
+    # ✅ Local (Termux)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'flipkart_db',
+            'USER': 'flipkart_user',
+            'PASSWORD': 'Flipkart1234',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -123,37 +102,42 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# ============================================================
-# 🌍 TIME
-# ============================================================
-
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Dhaka'
 USE_I18N = True
 USE_TZ = True
 
 # ============================================================
-# 📁 STATIC / MEDIA
+# 📁 STATIC FILES - লোকাল ও প্রোডাকশন
 # ============================================================
-
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static']
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# STATIC_ROOT - যেখানে collectstatic ফাইল জমা হবে
+if DEBUG:
+    # ✅ লোকাল ডেভেলপমেন্ট
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+else:
+    # ✅ App Platform (Production)
+    STATIC_ROOT = '/app/staticfiles/'
+
+# STATICFILES_DIRS - যেখানে আপনার static ফোল্ডার আছে
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # ============================================================
-# 📧 EMAIL (Optional)
+# 📁 MEDIA FILES - লোকাল ও প্রোডাকশন
 # ============================================================
+MEDIA_URL = '/media/'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-# ============================================================
-# 🛒 BASIC
-# ============================================================
+if DEBUG:
+    # ✅ লোকাল ডেভেলপমেন্ট
+    MEDIA_ROOT = BASE_DIR / 'media'
+else:
+    # ✅ App Platform (Production)
+    MEDIA_ROOT = '/app/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'accounts:login'
@@ -161,14 +145,9 @@ LOGIN_REDIRECT_URL = 'home:home'
 LOGOUT_REDIRECT_URL = 'home:home'
 CART_SESSION_ID = 'cart'
 
-
-USE_X_FORWARDED_HOST = False
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-# ============================================================
-# 🚀 FINAL STATUS
-# ============================================================
-
-print("=" * 40)
-print("🚀 Django Running: PRODUCTION")
-print("🗄️ Database: PostgreSQL")
-print("=" * 40)
+print("=" * 50)
+print("🚀 Django Running:", "PRODUCTION" if not DEBUG else "DEVELOPMENT")
+print("🗄️ Database:", "PostgreSQL (Production)" if DATABASE_URL else "PostgreSQL (Local)")
+print("📁 STATIC_ROOT:", STATIC_ROOT)
+print("📁 MEDIA_ROOT:", MEDIA_ROOT)
+print("=" * 50)
